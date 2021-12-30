@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Set up Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+    - name: Install node dependencies
+      run: |
+        yarn install
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+    - name: Build package
+      run: |
+        yarn build
+        python -m build
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      if: github.event_name != 'pull_request'
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}

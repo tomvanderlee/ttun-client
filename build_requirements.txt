@@ -1,0 +1,3 @@
+setuptools
+build
+setuptools-git-versioning
