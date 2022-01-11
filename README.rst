@@ -7,7 +7,7 @@ TTUN Client
 .. |Deploy| image:: https://github.com/tomvanderlee/ttun-client/actions/workflows/python-publish.yml/badge.svg
    :target: https://github.com/tomvanderlee/ttun-client/actions/workflows/python-publish.yml
 
-Expose a localport via you selfhosted `TTUN Server <https://github.com/tomvanderlee/ttun-server>`_
+Expose a localport via your selfhosted `TTUN Server <https://github.com/tomvanderlee/ttun-server>`_
 
 Installing
 ----------
