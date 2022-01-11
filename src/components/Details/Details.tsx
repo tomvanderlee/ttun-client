@@ -85,7 +85,6 @@ export default function Details({ requestResponse }: DetailsProps) {
             className={classNames(styles.tab, {
               [styles.selected]: tab === 'headers'
             })}
-            disabled={requestResponse.response === undefined}
           >
             Headers
           </button>
