@@ -42,13 +42,25 @@ def main():
 
     loop.run_until_complete(client.connect())
 
-    server = Server(config=client.config, on_resend=client.proxyRequest)
+    def print_info(server: Server):
+        print('Tunnel created:')
+        print(f'{client.config["url"]} -> http://localhost:{args.port}')
+        print('')
+        print(f'Inspect requests:')
+        print(f'http://localhost:{server.port}')
+
+    server = Server(
+        config=client.config,
+        on_resend=client.proxyRequest,
+        on_started=print_info,
+    )
+
     tasks = {
         loop.create_task(client.handle_messages()),
         loop.create_task(server.run())
     }
 
-    print(client.config['url'])
+
     try:
         loop.run_until_complete(asyncio.wait(tasks, return_when=FIRST_EXCEPTION))
     except (CancelledError, TimeoutError):

@@ -1,5 +1,5 @@
 import * as React from "react";
-import useRequests, {RequestResponse} from "../../hooks/useRequests";
+import useRequests, {RequestResponse, ReadyState} from "../../hooks/useRequests";
 import {useEffect, useMemo, useState} from "react";
 
 import styles from './App.module.scss';
@@ -11,34 +11,56 @@ interface Config {
   url: string
 }
 
-export default function App() {
-  const [config, setConfig]= useState<Config | null>(null)
-  useEffect(() => {
-    fetch(`http://${getHost()}/config/`)
-      .then(response => response.json() as Promise<Config>)
-      .then(setConfig)
-  }, [])
+type ReadyStateMap = {
+  [ReadyState.CONNECTING]: string,
+  [ReadyState.OPEN]: string,
+  [ReadyState.CLOSING]: string,
+  [ReadyState.CLOSED]: string,
+}
 
-  const requests = useRequests();
+const statusMap: ReadyStateMap = {
+  [ReadyState.CONNECTING]: '🔴',
+  [ReadyState.OPEN]: '🟢',
+  [ReadyState.CLOSING]: '🔴',
+  [ReadyState.CLOSED]: '🔴',
+}
+
+export default function App() {
+
+  const [config, setConfig]= useState<Config | null>(null)
+
+  const { calls, readyState } = useRequests({
+    onConnect: async () => {
+      const response = await fetch(`http://${getHost()}/config/`)
+      const config = await response.json()
+      setConfig(config)
+    }
+  });
+
+  useEffect(() => {
+    const url = new URL(config?.url ?? 'https://loading...');
+    document.title = `${statusMap[readyState]} ${url.host} | TTUN`;
+  }, [readyState, config?.url])
+
   const [selectedRequestIndex, setSelectedRequestIndex] = useState<number | null>(null);
   const selectedRequest = useMemo<RequestResponse | null>(() => (
     selectedRequestIndex === null
       ? null
-      : requests[selectedRequestIndex]
-  ), [selectedRequestIndex, requests]);
+      : calls[selectedRequestIndex]
+  ), [selectedRequestIndex, calls]);
 
   return config && (
     <div className={styles.app}>
       <header className={styles.header}>
-        TTUN
+        {statusMap[readyState]} TTUN
         <a href={config.url} target="_blank">{config.url}</a>
       </header>
       <main className={styles.main}>
         <ul className={styles.sidebar}>
           {
-            requests.length > 0
-              ? requests.slice(0).reverse().map((requestResponse, index) => (
-                <li onClick={() => setSelectedRequestIndex(requests.length - index - 1)} key={`request-${index}`}>
+            calls.length > 0
+              ? calls.slice(0).reverse().map((requestResponse, index) => (
+                <li onClick={() => setSelectedRequestIndex(calls.length - index - 1)} key={`request-${index}`}>
                   <RequestSummary requestResponse={requestResponse} />
                 </li>
               ))

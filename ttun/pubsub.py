@@ -8,6 +8,7 @@ class PubSub:
 
     def __init__(self):
         self.queues: list[asyncio.Queue] = []
+        self._history= []
 
     @classmethod
     def instance(cls) -> 'PubSub':
@@ -26,10 +27,24 @@ class PubSub:
         try:
             yield queue
         finally:
-            instance.queues.remove(queue)
-            del queue
+            cls.unsubscribe(queue)
+
+    @classmethod
+    def unsubscribe(cls, queue: asyncio.Queue):
+        instance = cls.instance()
+        instance.queues.remove(queue)
+        del queue
+
+    @classmethod
+    @property
+    def history(cls):
+        instance = cls.instance()
+        return instance._history
 
     @classmethod
     async def publish(cls, msg: Any):
-        for queue in cls.instance().queues:
+        instance = cls.instance()
+
+        instance._history.append(msg)
+        for queue in instance.queues:
             await queue.put(msg)

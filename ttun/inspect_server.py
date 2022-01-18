@@ -10,18 +10,17 @@ from ttun.types import Config, RequestData
 BASE_DIR = Path(__file__).resolve().parent
 
 
-def no_print(*args, **kwargs):
-    pass
-
-
 class Server:
-    def __init__(self, config: Config, on_resend: Callable[[RequestData], Awaitable]):
+    def __init__(self, config: Config, on_resend: Callable[[RequestData], Awaitable], on_started: Callable[['Server'], None]):
+        self.port = 4040
+
         self.config = {
             **config,
             'assets': '/assets/'
         }
 
         self.on_resend = on_resend
+        self.on_started = lambda *args, **kwargs: on_started(self)
 
         self.app = web.Application()
         with resources.path(__package__, 'staticfiles') as staticfiles:
@@ -34,12 +33,11 @@ class Server:
             ])
 
     async def run(self):
-        port = 4040
         while True:
             try:
-                await web._run_app(self.app, port=port)
+                await web._run_app(self.app, port=self.port, print=self.on_started)
             except OSError:
-                port += 1
+                self.port += 1
 
     async def root(self, request: web.Request):
         with resources.path(__package__, 'staticfiles') as staticfiles:
@@ -63,6 +61,11 @@ class Server:
     async def inspect_socket(self, request: web.Request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
+
+        await ws.send_json({
+            'type': 'historic',
+            'payload': PubSub.history
+        })
 
         with PubSub.subscribe() as subscription:
             while message := await subscription.get():

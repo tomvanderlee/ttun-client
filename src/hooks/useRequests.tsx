@@ -33,25 +33,67 @@ interface Response {
   payload: ResponsePayload,
 }
 
+interface Historic {
+  type: 'historic'
+  payload: (Request | Response)[]
+}
+
 export interface RequestResponse {
   request: RequestPayload
   response?: ResponsePayload
 }
 
-export default function useRequests(): RequestResponse[] {
+export enum ReadyState {
+  CONNECTING = 0,
+  OPEN = 1,
+  CLOSING = 2,
+  CLOSED = 3,
+}
+
+export interface useRequestsProps {
+  onConnect: () => Promise<void>
+}
+
+export interface UseRequests {
+  calls: RequestResponse[]
+  readyState: ReadyState
+}
+
+export default function useRequests({ onConnect }: useRequestsProps): UseRequests {
   const wsHost = useMemo(getHost, []);
-  const connect = useCallback(() => new WebSocket(`ws://${wsHost}/inspect/`), [wsHost])
 
   const [requests, setRequests] = useState<RequestPayload[]>([]);
   const [responses, setResponses] = useState<ResponsePayload[]>([]);
-  const [ws, setWs] = useState(() => connect());
+
+
+  const connect = useCallback(() => (
+    new WebSocket(`ws://${wsHost}/inspect/`)
+  ), [wsHost]);
+
+  const [ws, setWs] = useState<WebSocket>(() => connect());
+  const [readyState, setReadyState] = useState<ReadyState>(ws.readyState);
 
   useEffect(() => {
-    const reconnect = () => setWs(() => connect())
+    setReadyState(ws.readyState);
+
+    const onClose = () => {
+      setReadyState(ws.readyState);
+      setWs(connect());
+    }
+    const onOpen = () => {
+      onConnect();
+      setReadyState(ws.readyState);
+    }
     const onMessage = ({ data }) => {
-      const { type, payload } = JSON.parse(data) as Request | Response
+      const { type, payload } = JSON.parse(data) as Historic | Request | Response
 
       switch (type) {
+        case 'historic':
+          const requests = (payload as (Request | Response)[]).filter(({ type }) => type === 'request');
+          const responses = (payload as (Request | Response)[]).filter(({ type }) => type === 'response');
+          setRequests((rqs) => [...rqs, ...requests.map(({ payload }) => payload as RequestPayload)]);
+          setResponses((rps) => [...rps, ...responses.map(({ payload }) => payload as ResponsePayload)]);
+          break
         case 'request':
           setRequests((rqs) => [...rqs, payload as RequestPayload])
           break
@@ -62,16 +104,21 @@ export default function useRequests(): RequestResponse[] {
     }
 
     ws.addEventListener('message', onMessage)
-    ws.addEventListener('close', reconnect)
+    ws.addEventListener('close', onClose)
+    ws.addEventListener('open', onOpen)
 
     return () => {
       ws.removeEventListener('message', onMessage);
-      ws.removeEventListener('close', reconnect);
+      ws.removeEventListener('close', onClose);
+      ws.removeEventListener('open', onOpen)
     }
   }, [ws])
 
-  return useMemo<RequestResponse[]>(() => requests.map((request) => ({
-    request: request,
-    response: responses.find(({ id }) => id === request.id)
-  })), [requests, responses])
+  return {
+    calls: useMemo<RequestResponse[]>(() => requests.map((request) => ({
+      request: request,
+      response: responses.find(({id}) => id === request.id)
+    })), [requests, responses]),
+    readyState,
+  }
 }
