@@ -6,6 +6,8 @@ import styles from './App.module.scss';
 import Details from "../Details/Details";
 import RequestSummary from "../RequestSummary/RequestSummary";
 import {getHost} from "../../utils";
+import {Container, Navbar, Col, Row, Nav, ListGroup} from "react-bootstrap";
+import classNames from "classnames";
 
 interface Config {
   url: string
@@ -50,29 +52,59 @@ export default function App() {
   ), [selectedRequestIndex, calls]);
 
   return config && (
-    <div className={styles.app}>
-      <header className={styles.header}>
-        {statusMap[readyState]} TTUN
-        <a href={config.url} target="_blank">{config.url}</a>
-      </header>
-      <main className={styles.main}>
-        <ul className={styles.sidebar}>
-          {
-            calls.length > 0
-              ? calls.slice(0).reverse().map((requestResponse, index) => (
-                <li onClick={() => setSelectedRequestIndex(calls.length - index - 1)} key={`request-${index}`}>
-                  <RequestSummary requestResponse={requestResponse} />
-                </li>
-              ))
-              : (
-                <div className={styles.noRequest}>
-                  <p>No requests</p>
-                </div>
-              )
-          }
-        </ul>
+    <>
+      <Navbar
+        bg="dark"
+        variant="dark"
+        expand
+      >
+        <Container fluid>
+          <Navbar.Brand>
+            {statusMap[readyState]} TTUN
+          </Navbar.Brand>
+          <Navbar.Text>
+            <a href={config.url} target="_blank">{config.url}</a>
+          </Navbar.Text>
+        </Container>
+      </Navbar>
+      <Container>
 
-        <div className={styles.details}>
+      </Container>
+      <Row className={classNames(styles.content, 'gx-0', 'overflow-hidden')}>
+        <Col className='border-end overflow-auto' xs={4}>
+          <ListGroup variant='flush'>
+            {
+              calls.length > 0
+                ? (
+                  calls.slice(0).reverse().map((requestResponse, index) => {
+                    const selected = selectedRequestIndex === calls.length - index - 1;
+                    return (
+                      <ListGroup.Item
+                        onClick={() => setSelectedRequestIndex(calls.length - index - 1)}
+                        key={`request-${index}`}
+                        className={classNames({
+                          'bg-primary': selected,
+                          'text-light': selected,
+                          'border-bottom': true
+                        })}
+                      >
+                        <RequestSummary
+                          requestResponse={requestResponse}
+                          selected={selected}
+                        />
+                      </ListGroup.Item>
+                    )
+                  })
+                )
+                : (
+                  <div className={styles.noRequest}>
+                    <p>No requests</p>
+                  </div>
+                )
+            }
+          </ListGroup>
+        </Col>
+        <Col xs={8} className=''>
           {
             selectedRequest !== null
               ? (
@@ -83,8 +115,44 @@ export default function App() {
                 </div>
               )
           }
-        </div>
-      </main>
-    </div>
+        </Col>
+      </Row>
+    </>
+    // <div className={styles.app}>
+    //   <header className={styles.header}>
+    //     {statusMap[readyState]} TTUN
+    //     <a href={config.url} target="_blank">{config.url}</a>
+    //   </header>
+    //   <main className={styles.main}>
+    //     <ul className={styles.sidebar}>
+    //       {
+    //         calls.length > 0
+    //           ? calls.slice(0).reverse().map((requestResponse, index) => (
+    //             <li onClick={() => setSelectedRequestIndex(calls.length - index - 1)} key={`request-${index}`}>
+    //               <RequestSummary requestResponse={requestResponse} />
+    //             </li>
+    //           ))
+    //           : (
+    //             <div className={styles.noRequest}>
+    //               <p>No requests</p>
+    //             </div>
+    //           )
+    //       }
+    //     </ul>
+    //
+    //     <div className={styles.details}>
+    //       {
+    //         selectedRequest !== null
+    //           ? (
+    //             <Details requestResponse={selectedRequest} />
+    //           ) : (
+    //             <div className={styles.noRequestSelected}>
+    //               <p>Select a request to inspect it</p>
+    //             </div>
+    //           )
+    //       }
+    //     </div>
+    //   </main>
+    // </div>
   );
 }

@@ -3,31 +3,48 @@ import * as React from "react";
 import classNames from "classnames";
 
 import styles from './RequestSummary.module.scss';
+import {Badge, Card, Col, Row} from "react-bootstrap";
 
 interface RequestSummaryProps {
+  selected?: boolean
   requestResponse: RequestResponse
-  className?: string
 }
 
 function isBetween(value: number, min: number, max: number) {
   return value >= min && value <= max
 }
 
-export default function RequestSummary({ requestResponse: { request, response }, className = ''}: RequestSummaryProps) {
-  const statusCode = response?.status ?? 0
+function calcBadgeVariant(statusCode: number | undefined): string {
+  if (statusCode === undefined) {
+    return 'secondary';
+  } else if (isBetween(statusCode, 100, 199)) {
+    return 'info';
+  } else if (isBetween(statusCode, 200, 299)) {
+    return 'success';
+  } else if (isBetween(statusCode, 300, 399)) {
+    return 'primary';
+  } else if (isBetween(statusCode, 400, 499)) {
+    return 'danger';
+  } else if (isBetween(statusCode, 500, 599)) {
+    return 'warning';
+  }
+}
+
+export default function RequestSummary({ requestResponse: { request, response }, selected = false }: RequestSummaryProps) {
   return (
-    <div className={classNames(styles.requestSummary, className)}>
-      <span className={styles.method}>{ request.method }</span>
-      <p>{ request.path }</p>
-      <span className={classNames(styles.statusCode, {
-        [styles.info]: isBetween(statusCode, 100, 199),
-        [styles.success]: isBetween(statusCode, 200, 299),
-        [styles.redirect]: isBetween(statusCode, 300, 399),
-        [styles.clientError]: isBetween(statusCode, 400, 499),
-        [styles.serverError]: isBetween(statusCode, 500, 599)
-      })}>
-        { response?.status ?? 'Loading...'}
-      </span>
-    </div>
+    <Row>
+      <Col className='flex-grow-0 d-flex align-items-center'>{request.method}</Col>
+      <Col className='flex-grow-1'>{ request.path }</Col>
+      <Col className='flex-grow-0 d-flex align-items-center'>
+        <Badge
+          className={classNames({
+            'border': selected,
+          })}
+          bg={calcBadgeVariant(response?.status)}
+        >
+          { response?.status ?? 'Loading...'}
+        </Badge>
+      </Col>
+    </Row>
   )
 }

@@ -13,6 +13,21 @@ import {
 } from "react";
 import ReactJson from 'react-json-view';
 import styles from './Content.module.scss';
+import {Col, Container, Row} from "react-bootstrap";
+
+function getHeader(headers: { [key: string]: string }, key: string, unit?: string): string | null {
+  console.log(headers, key)
+  try {
+    const [_, value] = Object
+      .entries(headers)
+      .find(([headerKey]) => headerKey.toLowerCase() === key.toLowerCase())
+    return unit !== undefined
+      ? `${value}${unit}`
+      : value
+  } catch {
+    return null;
+  }
+}
 
 interface ContentProps {
   data: RequestPayload | ResponsePayload
@@ -20,17 +35,29 @@ interface ContentProps {
   raw?: boolean
 }
 
-export default function Content({ raw, setRaw, ...props }: ContentProps): JSX.Element {
+export default function Content({ raw, setRaw, data }: ContentProps): JSX.Element {
   return (
-    <div className={styles.content}>
-      <div className={styles.header}>
-        <input id='raw' type='checkbox' checked={raw} onChange={() => setRaw(!raw)}/>
-        <label htmlFor='raw'>Raw</label>
-      </div>
-      <div className={styles.body}>
+    <>
+      <Container fluid className="border-bottom">
+        <Row className="py-3">
+            <Col>
+              <input id='raw' type='checkbox' checked={raw} onChange={() => setRaw(!raw)}/>
+              <label htmlFor='raw' className="ps-1">Raw</label>
+            </Col>
+          <Col xs="auto">
+            {
+              [
+                getHeader(data.headers, 'content-length', 'bytes'),
+                getHeader(data.headers, 'content-type'),
+              ].filter(x => x !== null).join('; ')
+            }
+          </Col>
+        </Row>
+      </Container>
+      <Row>
         {(() => {
           try {
-            return ContentBody({ ...props, raw })
+            return ContentBody({ data, raw })
           } catch {
             return (
               <div className={styles.renderError}>
@@ -40,8 +67,28 @@ export default function Content({ raw, setRaw, ...props }: ContentProps): JSX.El
             )
           }
         })()}
-      </div>
-    </div>
+      </Row>
+    </>
+    // <div className={styles.content}>
+    //   <div className={styles.header}>
+    //     <input id='raw' type='checkbox' checked={raw} onChange={() => setRaw(!raw)}/>
+    //     <label htmlFor='raw'>Raw</label>
+    //   </div>
+    //   <div className={styles.body}>
+    //     {(() => {
+    //       try {
+    //         return ContentBody({ ...props, raw })
+    //       } catch {
+    //         return (
+    //           <div className={styles.renderError}>
+    //             <p>Body could not be rendered</p>
+    //             <a onClick={() => setRaw(true)}>View raw</a>
+    //           </div>
+    //         )
+    //       }
+    //     })()}
+    //   </div>
+    // </div>
   )
 };
 
@@ -51,12 +98,7 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, 'setRaw'>) {
         return '';
       }
 
-      const [_, type] = (
-        Object
-          .entries(data.headers)
-          .find(([key]) => key.toLowerCase() === 'content-type')
-      );
-
+      const type = getHeader(data.headers, 'content-type');
       return type.toLowerCase().split(';')[0];
     }, [data, raw]);
 
