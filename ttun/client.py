@@ -85,7 +85,8 @@ class Client:
                 url=f'http://localhost:{self.port}{request["path"]}',
                 headers=request['headers'],
                 cookies=request['cookies'],
-                data=b64decode(request['body'].encode())
+                data=b64decode(request['body'].encode()),
+                allow_redirects=False
             )
             end = perf_counter()
 
