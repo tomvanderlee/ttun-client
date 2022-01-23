@@ -62,6 +62,7 @@ export interface UseRequests {
 export default function useRequests({ onConnect }: useRequestsProps): UseRequests {
   const wsHost = useMemo(getHost, []);
 
+  const [initialConnection, setInitialConnection] = useState(true);
   const [requests, setRequests] = useState<RequestPayload[]>([]);
   const [responses, setResponses] = useState<ResponsePayload[]>([]);
 
@@ -82,6 +83,7 @@ export default function useRequests({ onConnect }: useRequestsProps): UseRequest
     }
     const onOpen = () => {
       onConnect();
+      setInitialConnection(false);
       setReadyState(ws.readyState);
     }
     const onMessage = ({ data }) => {
@@ -89,10 +91,12 @@ export default function useRequests({ onConnect }: useRequestsProps): UseRequest
 
       switch (type) {
         case 'historic':
-          const requests = (payload as (Request | Response)[]).filter(({ type }) => type === 'request');
-          const responses = (payload as (Request | Response)[]).filter(({ type }) => type === 'response');
-          setRequests((rqs) => [...rqs, ...requests.map(({ payload }) => payload as RequestPayload)]);
-          setResponses((rps) => [...rps, ...responses.map(({ payload }) => payload as ResponsePayload)]);
+          if (initialConnection) {
+            const requests = (payload as (Request | Response)[]).filter(({ type }) => type === 'request');
+            const responses = (payload as (Request | Response)[]).filter(({ type }) => type === 'response');
+            setRequests((rqs) => [...rqs, ...requests.map(({ payload }) => payload as RequestPayload)]);
+            setResponses((rps) => [...rps, ...responses.map(({ payload }) => payload as ResponsePayload)]);
+          }
           break
         case 'request':
           setRequests((rqs) => [...rqs, payload as RequestPayload])

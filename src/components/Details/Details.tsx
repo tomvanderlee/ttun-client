@@ -1,25 +1,11 @@
 import * as React from "react";
-import {
-  RequestPayload,
-  RequestResponse,
-  ResponsePayload
-} from "~hooks/useRequests";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
+import {RequestResponse} from "~hooks/useRequests";
 import styles from "./Details.module.scss";
 import RequestSummary from "../RequestSummary/RequestSummary";
-import classNames from 'classnames';
 import Content from "../Content/Content";
 import {getHost} from "../../utils";
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Nav,
-  NavItem,
-  Row,
-  Table
-} from "react-bootstrap";
+import {Button, Card, Col, Container, Nav, Row, Table} from "react-bootstrap";
 
 
 interface TimingProps {
@@ -99,147 +85,80 @@ export default function Details({ requestResponse }: DetailsProps) {
   ), [requestResponse]);
 
   return (
-    <>
-      <Row>
-        <Col>
-          <Container fluid style={{ fontSize: '1.5em' }} className="py-3">
-            <RequestSummary requestResponse={requestResponse} className={styles.summary}/>
-          </Container>
-        </Col>
-      </Row>
-      <Row className="gx-0 d-flex">
-        <Col>
-          <Nav
-            variant="tabs"
-            activeKey={tab}
-            onSelect={(tab) => selectTab(tab as Tab)}
-          >
-            <Nav.Item>
-              <Nav.Link eventKey="headers">
-                Headers
-              </Nav.Link >
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="request">
-                Request
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                eventKey="response"
-                disabled={requestResponse.response === undefined}
-              >
-                Response
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
-        </Col>
-        <Col className="border-bottom px-3 " xs="auto">
-          <Timing timing={requestResponse.response?.timing ?? NaN} />
-          <Button variant="outline-primary" onClick={() => resend()} className="ms-3">
-            Resend
-          </Button>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          {
-            tab === 'headers' && (
-              <>
-                <Headers
-                  title="Request Headers"
-                  headers={requestResponse.request.headers}
-                />
-                {
-                  requestResponse.response && (
-                    <Headers
-                      title="Response Headers"
-                      headers={requestResponse.response.headers}
-                    />
-                  )
-                }
-              </>
-            )
-          }
-          {
-            tab === 'request' && (
-              <Content data={requestResponse.request} raw={raw} setRaw={setRaw}/>
-            )
-          }
-          {
-            tab === 'response' && requestResponse.response !== undefined && (
-              <Content data={requestResponse.response} raw={raw} setRaw={setRaw}/>
-            )
-          }
-        </Col>
-      </Row>
-    </>
-    // <div className={styles.details}>
-    //   <div className={styles.header}>
-    //
-    //     <div className={styles.tabs}>
-    //       <button
-    //         onClick={() => selectTab('headers')}
-    //         className={classNames(styles.tab, {
-    //           [styles.selected]: tab === 'headers'
-    //         })}
-    //       >
-    //         Headers
-    //       </button>
-    //       <button
-    //         onClick={() => selectTab('request')}
-    //         className={classNames(styles.tab, {
-    //           [styles.selected]: tab === 'request'
-    //         })}
-    //       >
-    //         Request
-    //       </button>
-    //       <button
-    //         onClick={() => selectTab('response')}
-    //         className={classNames(styles.tab, {
-    //           [styles.selected]: tab === 'response'
-    //         })}
-    //         disabled={requestResponse.response === undefined}
-    //       >
-    //         Response
-    //       </button>
-    //
-    //       <div className={styles.emptySpace}>
-    //         <Timing timing={requestResponse.response?.timing ?? NaN} />
-    //         <button className={styles.resend} onClick={() => resend()}>Resend</button>
-    //       </div>
-    //     </div>
-    //   </div>
-    //   <div className={styles.content}>
-    //     {
-    //       tab === 'headers' && (
-    //         <>
-    //           <Headers
-    //             title="Request Headers"
-    //             headers={requestResponse.request.headers}
-    //           />
-    //           {
-    //             requestResponse.response && (
-    //               <Headers
-    //                 title="Response Headers"
-    //                 headers={requestResponse.response.headers}
-    //               />
-    //             )
-    //           }
-    //         </>
-    //       )
-    //     }
-    //     {
-    //       tab === 'request' && (
-    //         <Content data={requestResponse.request} raw={raw} setRaw={setRaw}/>
-    //       )
-    //     }
-    //     {
-    //       tab === 'response' && requestResponse.response !== undefined && (
-    //         <Content data={requestResponse.response} raw={raw} setRaw={setRaw}/>
-    //       )
-    //     }
-    //   </div>
-    // </div>
+    <div className={styles.details}>
+      <div className={styles.header}>
+        <Row>
+          <Col>
+            <Container fluid style={{ fontSize: '1.5em' }} className="py-3">
+              <RequestSummary requestResponse={requestResponse} className={styles.summary}/>
+            </Container>
+          </Col>
+        </Row>
+        <Row className="gx-0 d-flex">
+          <Col>
+            <Nav
+              variant="tabs"
+              activeKey={tab}
+              onSelect={(tab) => selectTab(tab as Tab)}
+            >
+              <Nav.Item>
+                <Nav.Link eventKey="headers">
+                  Headers
+                </Nav.Link >
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="request">
+                  Request
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  eventKey="response"
+                  disabled={requestResponse.response === undefined}
+                >
+                  Response
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Col>
+          <Col className="border-bottom px-3 " xs="auto">
+            <Timing timing={requestResponse.response?.timing ?? NaN} />
+            <Button variant="outline-primary" onClick={() => resend()} className="ms-3">
+              Resend
+            </Button>
+          </Col>
+        </Row>
+      </div>
+      <div className={styles.content}>
+        {
+          tab === 'headers' && (
+            <>
+              <Headers
+                title="request headers"
+                headers={requestResponse.request.headers}
+              />
+              {
+                requestResponse.response && (
+                  <Headers
+                    title="response headers"
+                    headers={requestResponse.response.headers}
+                  />
+                )
+              }
+            </>
+          )
+        }
+        {
+          tab === 'request' && (
+            <Content data={requestResponse.request} raw={raw} setRaw={setRaw}/>
+          )
+        }
+        {
+          tab === 'response' && requestResponse.response !== undefined && (
+            <Content data={requestResponse.response} raw={raw} setRaw={setRaw}/>
+          )
+        }
+      </div>
+    </div>
   )
 }

@@ -2,7 +2,6 @@ import {RequestResponse} from "~hooks/useRequests";
 import * as React from "react";
 import classNames from "classnames";
 
-import styles from './RequestSummary.module.scss';
 import {Badge, Card, Col, Row} from "react-bootstrap";
 
 interface RequestSummaryProps {

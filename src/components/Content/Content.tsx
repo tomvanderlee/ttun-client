@@ -1,19 +1,9 @@
-import styles from "~components/Details/Details.module.scss";
 import * as React from "react";
-import classNames from "classnames";
+import {Dispatch, SetStateAction, useMemo} from "react";
 import {RequestPayload, ResponsePayload} from "~hooks/useRequests";
-import {
-  Dispatch,
-  forwardRef, SetStateAction,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState
-} from "react";
 import ReactJson from 'react-json-view';
 import styles from './Content.module.scss';
-import {Col, Container, Row} from "react-bootstrap";
+import {Button, Col, Container, Row} from "react-bootstrap";
 
 function getHeader(headers: { [key: string]: string }, key: string, unit?: string): string | null {
   console.log(headers, key)
@@ -37,7 +27,7 @@ interface ContentProps {
 
 export default function Content({ raw, setRaw, data }: ContentProps): JSX.Element {
   return (
-    <>
+    <div className={styles.content}>
       <Container fluid className="border-bottom">
         <Row className="py-3">
             <Col>
@@ -54,7 +44,7 @@ export default function Content({ raw, setRaw, data }: ContentProps): JSX.Elemen
           </Col>
         </Row>
       </Container>
-      <Row>
+      <Row className={styles.body}>
         {(() => {
           try {
             return ContentBody({ data, raw })
@@ -62,33 +52,13 @@ export default function Content({ raw, setRaw, data }: ContentProps): JSX.Elemen
             return (
               <div className={styles.renderError}>
                 <p>Body could not be rendered</p>
-                <a onClick={() => setRaw(true)}>View raw</a>
+                <Button variant="link" onClick={() => setRaw(true)}>View raw</Button>
               </div>
             )
           }
         })()}
       </Row>
-    </>
-    // <div className={styles.content}>
-    //   <div className={styles.header}>
-    //     <input id='raw' type='checkbox' checked={raw} onChange={() => setRaw(!raw)}/>
-    //     <label htmlFor='raw'>Raw</label>
-    //   </div>
-    //   <div className={styles.body}>
-    //     {(() => {
-    //       try {
-    //         return ContentBody({ ...props, raw })
-    //       } catch {
-    //         return (
-    //           <div className={styles.renderError}>
-    //             <p>Body could not be rendered</p>
-    //             <a onClick={() => setRaw(true)}>View raw</a>
-    //           </div>
-    //         )
-    //       }
-    //     })()}
-    //   </div>
-    // </div>
+    </div >
   )
 };
 
@@ -103,7 +73,13 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, 'setRaw'>) {
     }, [data, raw]);
 
     if (raw) {
-      return <pre>{atob(data.body)}</pre>
+      return (
+        <pre className="mb-0">
+          <code>
+            {atob(data.body)}
+          </code>
+        </pre>
+      )
     }
 
     if (['application/pdf', 'text/html'].includes(contentType)) {

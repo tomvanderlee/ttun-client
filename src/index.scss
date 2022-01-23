@@ -3,12 +3,12 @@
 }
 
 html, body, #root {
+  margin: 0;
+  padding: 0;
+
   height: 100vh;
   width: 100vw;
 
-}
-
-#root {
-  display: flex;
-  flex-flow: column nowrap;
+  font-family: sans-serif;
+  overflow: hidden;
 }
