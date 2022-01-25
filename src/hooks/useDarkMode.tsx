@@ -7,12 +7,6 @@ export interface UseDarkMode {
 }
 
 export default function useDarkMode() {
-  const themeConfig = useMemo(() => new ThemeConfig(), []);
-  const [darkMode, setDarkMode] = useState(() => themeConfig.getTheme() === 'dark')
-
-  useEffect(() => {
-    themeConfig.setTheme(darkMode ? 'dark' : 'light');
-  }, [darkMode])
 
   return {
     darkMode,

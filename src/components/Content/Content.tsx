@@ -1,9 +1,10 @@
 import * as React from "react";
-import {Dispatch, SetStateAction, useMemo} from "react";
+import {Dispatch, SetStateAction, useContext, useMemo} from "react";
 import {RequestPayload, ResponsePayload} from "~hooks/useRequests";
 import ReactJson from 'react-json-view';
 import styles from './Content.module.scss';
 import {Button, Col, Container, Row} from "react-bootstrap";
+import {DarkModeContext} from "../../contexts/DarkMode";
 
 function getHeader(headers: { [key: string]: string }, key: string, unit?: string): string | null {
   console.log(headers, key)
@@ -63,6 +64,7 @@ export default function Content({ raw, setRaw, data }: ContentProps): JSX.Elemen
 };
 
 function ContentBody({ data, raw = false }: Omit<ContentProps, 'setRaw'>) {
+    const { darkMode } = useContext(DarkModeContext);
     const contentType = useMemo(() => {
       if (raw) {
         return '';
@@ -84,6 +86,7 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, 'setRaw'>) {
 
     if (['application/pdf', 'text/html'].includes(contentType)) {
       return <iframe
+        className="bg-white"
         src={`data:${contentType};base64,${data.body}`}
         srcDoc={contentType === 'text/html' ? atob(data.body) : undefined}
         loading='lazy'
@@ -94,10 +97,12 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, 'setRaw'>) {
     if (contentType.startsWith('application/json')) {
       return <ReactJson
         src={JSON.parse(atob(data.body))}
+        theme={darkMode ? "monokai" : undefined}
         style={{
           padding: '1em',
           width: '100%',
           height: '100%',
+          overflowY: 'auto',
         }}
       />
     }

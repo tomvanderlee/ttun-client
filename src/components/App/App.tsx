@@ -1,5 +1,5 @@
 import * as React from "react";
-import {ReactElement, useEffect, useMemo, useState} from "react";
+import {ReactElement, useContext, useEffect, useMemo, useState} from "react";
 import useRequests, {
   ReadyState,
   RequestResponse
@@ -16,6 +16,7 @@ import {Sliders} from "../Icons/Sliders";
 import {Sun} from "../Icons/Sun";
 import {Moon} from "../Icons/Moon";
 import Trash from "../Icons/Trash";
+import {DarkModeContext} from "../../contexts/DarkMode";
 
 interface Config {
   url: string
@@ -49,7 +50,7 @@ const statusTextMap: ReadyStateMap = {
 }
 
 export default function App() {
-  const { darkMode, toggle } = useDarkMode();
+  const { darkMode, toggle } = useContext(DarkModeContext);
   const [config, setConfig]= useState<Config | null>(null)
 
   const { calls, readyState, clear } = useRequests({
