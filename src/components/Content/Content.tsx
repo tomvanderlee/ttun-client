@@ -30,9 +30,9 @@ export default function Content({ raw, setRaw, data }: ContentProps): JSX.Elemen
     <div className={styles.content}>
       <Container fluid className="border-bottom">
         <Row className="py-3">
-            <Col>
-              <input id='raw' type='checkbox' checked={raw} onChange={() => setRaw(!raw)}/>
-              <label htmlFor='raw' className="ps-1">Raw</label>
+            <Col className="form-check form-switch ms-3">
+              <input className="form-check-input" id='raw' type='checkbox' checked={raw} role="switch" onChange={() => setRaw(!raw)}/>
+              <label htmlFor='raw' className="form-check-label">Raw</label>
             </Col>
           <Col xs="auto">
             {

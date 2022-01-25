@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useMemo, useState} from "react";
+import {ReactElement, useEffect, useMemo, useState} from "react";
 import useRequests, {
   ReadyState,
   RequestResponse
@@ -9,11 +9,22 @@ import styles from './App.module.scss';
 import Details from "../Details/Details";
 import RequestSummary from "../RequestSummary/RequestSummary";
 import {getHost} from "../../utils";
-import {Container, ListGroup, Navbar} from "react-bootstrap";
+import {Container, ListGroup, Nav, Navbar, NavDropdown} from "react-bootstrap";
 import classNames from "classnames";
+import useDarkMode from "../../hooks/useDarkMode";
+import {Sliders} from "../Icons/Sliders";
+import {Sun} from "../Icons/Sun";
+import {Moon} from "../Icons/Moon";
+import Trash from "../Icons/Trash";
 
 interface Config {
   url: string
+}
+
+interface SettingsMenu {
+  icon: ReactElement,
+  label: string,
+  onClick: () => void,
 }
 
 type ReadyStateMap = {
@@ -23,18 +34,25 @@ type ReadyStateMap = {
   [ReadyState.CLOSED]: string,
 }
 
-const statusMap: ReadyStateMap = {
+const statusIconMap: ReadyStateMap = {
   [ReadyState.CONNECTING]: '🔴',
   [ReadyState.OPEN]: '🟢',
   [ReadyState.CLOSING]: '🔴',
   [ReadyState.CLOSED]: '🔴',
 }
 
-export default function App() {
+const statusTextMap: ReadyStateMap = {
+  [ReadyState.CONNECTING]: 'Connecting...',
+  [ReadyState.OPEN]: 'Connected',
+  [ReadyState.CLOSING]: 'Closing...',
+  [ReadyState.CLOSED]: 'Closed',
+}
 
+export default function App() {
+  const { darkMode, toggle } = useDarkMode();
   const [config, setConfig]= useState<Config | null>(null)
 
-  const { calls, readyState } = useRequests({
+  const { calls, readyState, clear } = useRequests({
     onConnect: async () => {
       const response = await fetch(`http://${getHost()}/config/`)
       const config = await response.json()
@@ -44,7 +62,7 @@ export default function App() {
 
   useEffect(() => {
     const url = new URL(config?.url ?? 'https://loading...');
-    document.title = `${statusMap[readyState]} ${url.host} | TTUN`;
+    document.title = `${statusIconMap[readyState]} ${url.host} | TTUN`;
   }, [readyState, config?.url])
 
   const [selectedRequestIndex, setSelectedRequestIndex] = useState<number | null>(null);
@@ -53,6 +71,23 @@ export default function App() {
       ? null
       : calls[selectedRequestIndex]
   ), [selectedRequestIndex, calls]);
+
+  const settingsMenu: (SettingsMenu | null)[] = [
+    {
+      onClick: toggle,
+      icon: darkMode ? <Sun />: <Moon />,
+      label: darkMode ? "Light mode" : "DarkMode",
+    },
+    null,
+    {
+      onClick: () => {
+        setSelectedRequestIndex(null);
+        clear();
+      },
+      icon: <Trash />,
+      label: "Clear"
+    }
+  ];
 
   return config && (
     <div className={styles.app}>
@@ -63,12 +98,47 @@ export default function App() {
         as="header"
       >
         <Container fluid>
-          <Navbar.Brand>
-            {statusMap[readyState]} TTUN
-          </Navbar.Brand>
-          <Navbar.Text>
-            <a href={config.url} target="_blank">{config.url}</a>
-          </Navbar.Text>
+          <div>
+            <Navbar.Brand>
+              TTUN
+            </Navbar.Brand>
+            <Navbar.Text>
+              {`${statusIconMap[readyState]} ${statusTextMap[readyState]}`}
+            </Navbar.Text>
+          </div>
+          <div className="d-flex">
+            <Navbar.Text>
+              <a href={config.url} target="_blank">{config.url}</a>
+            </Navbar.Text>
+            <Navbar.Toggle aria-controls="settings"/>
+            <Navbar.Collapse id="settings" className="ms-2">
+              <Nav>
+                <NavDropdown
+                  align="end"
+                  title={<Sliders/>}
+                >
+                  {
+                    settingsMenu.map((item) => {
+                      if (item !== null) {
+                        const { onClick, icon, label } = item;
+                        return (
+                          <NavDropdown.Item
+                            onClick={onClick}
+                            className="d-flex align-items-center"
+                          >
+                            {icon}
+                            <span className="ms-3">{label}</span>
+                          </NavDropdown.Item>
+                        )
+                      } else {
+                        return <NavDropdown.Divider />
+                      }
+                    })
+                  }
+                </NavDropdown>
+              </Nav>
+            </Navbar.Collapse>
+          </div>
         </Container>
       </Navbar>
 

@@ -57,6 +57,7 @@ export interface useRequestsProps {
 export interface UseRequests {
   calls: RequestResponse[]
   readyState: ReadyState
+  clear: () => void
 }
 
 export default function useRequests({ onConnect }: useRequestsProps): UseRequests {
@@ -124,5 +125,9 @@ export default function useRequests({ onConnect }: useRequestsProps): UseRequest
       response: responses.find(({id}) => id === request.id)
     })), [requests, responses]),
     readyState,
+    clear: () => {
+      setRequests([])
+      setResponses([])
+    }
   }
 }
