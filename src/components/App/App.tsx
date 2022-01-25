@@ -11,7 +11,6 @@ import RequestSummary from "../RequestSummary/RequestSummary";
 import {getHost} from "../../utils";
 import {Container, ListGroup, Nav, Navbar, NavDropdown} from "react-bootstrap";
 import classNames from "classnames";
-import useDarkMode from "../../hooks/useDarkMode";
 import {Sliders} from "../Icons/Sliders";
 import {Sun} from "../Icons/Sun";
 import {Moon} from "../Icons/Moon";
@@ -77,7 +76,7 @@ export default function App() {
     {
       onClick: toggle,
       icon: darkMode ? <Sun />: <Moon />,
-      label: darkMode ? "Light mode" : "DarkMode",
+      label: darkMode ? "Light mode" : "Dark mode",
     },
     null,
     {
