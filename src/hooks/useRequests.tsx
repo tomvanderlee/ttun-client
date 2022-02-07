@@ -1,15 +1,12 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {getHost} from "../utils";
 
-type Dict = {
-  [key: string]: string
-}
+export type Headers = [string, string][]
 
 export interface RequestPayload {
   id: string
   body: string
-  cookies: Dict
-  headers: Dict
+  headers: Headers
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   path: string
 }
@@ -23,8 +20,7 @@ export interface ResponsePayload {
   id: string
   timing: number
   body: string
-  cookies: Dict
-  headers: Dict
+  headers: Headers
   status: number
 }
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useCallback, useMemo, useState} from "react";
-import {RequestResponse} from "~hooks/useRequests";
+import {RequestResponse, Headers} from "~hooks/useRequests";
 import styles from "./Details.module.scss";
 import RequestSummary from "../RequestSummary/RequestSummary";
 import Content from "../Content/Content";
@@ -28,9 +28,7 @@ function Timing({ timing }: TimingProps) {
 
 interface HeadersProps {
   title: string
-  headers: {
-    [key: string]: string
-  }
+  headers: Headers
 }
 
 function Headers({ title, headers }: HeadersProps) {
@@ -50,7 +48,7 @@ function Headers({ title, headers }: HeadersProps) {
           </thead>
           <tbody>
           {
-            Object.entries(headers).map(([key, value]) => (
+            headers.map(([key, value]) => (
               <tr>
                 <td>{key}</td>
                 <td>{value}</td>
