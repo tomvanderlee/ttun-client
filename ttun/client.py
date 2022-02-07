@@ -1,18 +1,17 @@
 import asyncio
 import json
 from base64 import b64encode, b64decode
-from time import perf_counter, process_time
+from time import perf_counter
 from typing import Optional, Callable, Coroutine, Awaitable
 from uuid import uuid4
 
 import websockets
-from aiohttp import ClientSession
+from aiohttp import ClientSession, DummyCookieJar
 from websockets import WebSocketClientProtocol
 from websockets.exceptions import ConnectionClosed
 
 from ttun.pubsub import PubSub
 from ttun.types import Config, RequestData, ResponseData
-from timeit import timeit
 
 
 class Client:
@@ -69,7 +68,7 @@ class Client:
                 break
 
     async def proxyRequest(self, request: RequestData, on_response: Callable[[ResponseData], Awaitable] = None):
-        async with ClientSession() as session:
+        async with ClientSession(cookie_jar=DummyCookieJar()) as session:
             request_id = uuid4()
             await PubSub.publish({
                 "type": "request",
@@ -84,7 +83,6 @@ class Client:
                 method=request['method'],
                 url=f'http://localhost:{self.port}{request["path"]}',
                 headers=request['headers'],
-                cookies=request['cookies'],
                 data=b64decode(request['body'].encode()),
                 allow_redirects=False
             )
@@ -92,8 +90,7 @@ class Client:
 
             response_data = ResponseData(
                 status=response.status,
-                headers=dict(response.headers),
-                cookies=dict(response.cookies),
+                headers=list(response.headers.items()),
                 body=b64encode(await response.read()).decode()
             )
 

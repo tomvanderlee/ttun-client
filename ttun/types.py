@@ -8,15 +8,13 @@ class Message(TypedDict):
 class RequestData(TypedDict):
     method: str
     path: str
-    headers: dict
-    cookies: dict
+    headers: list[tuple[str, str]]
     body: Optional[str]
 
 
 class ResponseData(TypedDict):
     status: int
-    headers: dict
-    cookies: dict
+    headers: list[tuple[str, str]]
     body: Optional[str]
 
 
