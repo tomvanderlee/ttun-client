@@ -1,17 +1,15 @@
 import * as React from "react";
 import {Dispatch, SetStateAction, useContext, useMemo} from "react";
-import {RequestPayload, ResponsePayload} from "~hooks/useRequests";
+import {RequestPayload, ResponsePayload, Headers} from "~hooks/useRequests";
 import ReactJson from 'react-json-view';
 import styles from './Content.module.scss';
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {DarkModeContext} from "../../contexts/DarkMode";
 
-function getHeader(headers: { [key: string]: string }, key: string, unit?: string): string | null {
+function getHeader(headers: Headers, key: string, unit?: string): string | null {
   console.log(headers, key)
   try {
-    const [_, value] = Object
-      .entries(headers)
-      .find(([headerKey]) => headerKey.toLowerCase() === key.toLowerCase())
+    const [_, value] = headers.find(([headerKey]) => headerKey.toLowerCase() === key.toLowerCase())
     return unit !== undefined
       ? `${value}${unit}`
       : value
