@@ -20,12 +20,12 @@ function Timing({ timing }: TimingProps) {
   ) : null;
 }
 
-interface HeadersProps {
+interface HeaderTableProps {
   title: string;
   headers: Headers;
 }
 
-function Headers({ title, headers }: HeadersProps) {
+function HeaderTable({ title, headers }: HeaderTableProps) {
   return (
     <Card className="m-3">
       <Table striped responsive borderless hover className="mb-0">
@@ -123,12 +123,12 @@ export default function RequestDetails({ requestResponse }: DetailsProps) {
       <div className={styles.content}>
         {tab === "headers" && (
           <>
-            <Headers
+            <HeaderTable
               title="request headers"
               headers={requestResponse.request.headers}
             />
             {requestResponse.response && (
-              <Headers
+              <HeaderTable
                 title="response headers"
                 headers={requestResponse.response.headers}
               />
