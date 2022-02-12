@@ -38,23 +38,31 @@ export default function RequestList({
 
   const [methods, setMethods] = useState<EnabledMethods>({
     GET: true,
+    HEAD: true,
     POST: true,
     PUT: true,
-    PATCH: true,
     DELETE: true,
+    CONNECT: true,
+    OPTIONS: true,
+    TRACE: true,
+    PATCH: true,
   });
 
   const toggleMethods = useCallback((method: Method | null) => {
     const enabled = method == null;
-    const methods = {
+    const methods: EnabledMethods = {
       GET: enabled,
+      HEAD: enabled,
       POST: enabled,
       PUT: enabled,
-      PATCH: enabled,
       DELETE: enabled,
+      CONNECT: enabled,
+      OPTIONS: enabled,
+      TRACE: enabled,
+      PATCH: enabled,
     };
 
-    if (!enabled) {
+    if (method !== null) {
       methods[method] = true;
     }
 
@@ -72,7 +80,7 @@ export default function RequestList({
   const methodLabel = useMemo(() => {
     if (enabledMethods.length == 1) {
       return enabledMethods[0];
-    } else if (enabledMethods.length === 5) {
+    } else if (enabledMethods.length === Object.keys(methods).length) {
       return "ANY";
     } else {
       return "CUSTOM";
@@ -88,12 +96,9 @@ export default function RequestList({
       );
     } catch {}
 
-    return (
-      requests.map((request, index) => [index, request]).reverse() as [
-        number,
-        RequestResponse
-      ][]
-    )
+    return requests
+      .map<[number, RequestResponse]>((request, index) => [index, request])
+      .reverse()
       .filter(
         ([index, request]) =>
           enabledMethods.length > 0 === null ||
@@ -119,21 +124,11 @@ export default function RequestList({
                 ANY
               </Dropdown.Item>
               <Dropdown.Divider />
-              <Dropdown.Item onClick={() => toggleMethods("GET")}>
-                GET
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => toggleMethods("POST")}>
-                POST
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => toggleMethods("PUT")}>
-                PUT
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => toggleMethods("PATCH")}>
-                PATCH
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => toggleMethods("DELETE")}>
-                DELETE
-              </Dropdown.Item>
+              {Object.entries(methods).map(([method, enabled]) => (
+                <Dropdown.Item onClick={() => toggleMethods(method as Method)}>
+                  {method}
+                </Dropdown.Item>
+              ))}
             </DropdownButton>
             <Form.Control
               type="text"

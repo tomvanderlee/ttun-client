@@ -2,7 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getHost } from "../utils";
 
 export type Headers = [string, string][];
-export type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+export type Method =
+  | "GET"
+  | "HEAD"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "CONNECT"
+  | "OPTIONS"
+  | "TRACE"
+  | "PATCH";
 
 export interface RequestPayload {
   id: string;
