@@ -1,17 +1,24 @@
 import asyncio
 import json
-from base64 import b64encode, b64decode
+from base64 import b64decode
+from base64 import b64encode
 from time import perf_counter
-from typing import Optional, Callable, Coroutine, Awaitable
+from typing import Awaitable
+from typing import Callable
+from typing import Coroutine
+from typing import Optional
 from uuid import uuid4
 
 import websockets
-from aiohttp import ClientSession, DummyCookieJar
+from aiohttp import ClientSession
+from aiohttp import DummyCookieJar
 from websockets import WebSocketClientProtocol
 from websockets.exceptions import ConnectionClosed
 
 from ttun.pubsub import PubSub
-from ttun.types import Config, RequestData, ResponseData
+from ttun.types import Config
+from ttun.types import RequestData
+from ttun.types import ResponseData
 
 
 class Client:
@@ -41,14 +48,13 @@ class Client:
 
                 except ConnectionClosed:
                     break
+
         return wrapper
 
     async def connect(self) -> WebSocketClientProtocol:
-        self.connection = await websockets.connect(f'{self.server}/tunnel/')
+        self.connection = await websockets.connect(f"{self.server}/tunnel/")
 
-        await self.send({
-            'subdomain': self.subdomain
-        })
+        await self.send({"subdomain": self.subdomain})
 
         self.config = await self.receive()
 
@@ -60,48 +66,49 @@ class Client:
             try:
                 request: RequestData = await self.receive()
                 await self.proxyRequest(
-                    request=request,
-                    on_response=lambda response: self.send(response)
+                    request=request, on_response=lambda response: self.send(response)
                 )
 
             except ConnectionClosed:
                 break
 
-    async def proxyRequest(self, request: RequestData, on_response: Callable[[ResponseData], Awaitable] = None):
+    async def proxyRequest(
+        self,
+        request: RequestData,
+        on_response: Callable[[ResponseData], Awaitable] = None,
+    ):
         async with ClientSession(cookie_jar=DummyCookieJar()) as session:
             request_id = uuid4()
-            await PubSub.publish({
-                "type": "request",
-                "payload": {
-                    "id": request_id.hex,
-                    **request
-                }
-            })
+            await PubSub.publish(
+                {"type": "request", "payload": {"id": request_id.hex, **request}}
+            )
 
             start = perf_counter()
             response = await session.request(
-                method=request['method'],
+                method=request["method"],
                 url=f'http://localhost:{self.port}{request["path"]}',
-                headers=request['headers'],
-                data=b64decode(request['body'].encode()),
-                allow_redirects=False
+                headers=request["headers"],
+                data=b64decode(request["body"].encode()),
+                allow_redirects=False,
             )
             end = perf_counter()
 
             response_data = ResponseData(
                 status=response.status,
                 headers=list(response.headers.items()),
-                body=b64encode(await response.read()).decode()
+                body=b64encode(await response.read()).decode(),
             )
 
             if on_response is not None:
                 await on_response(response_data)
 
-            await PubSub.publish({
-                "type": "response",
-                "payload": {
-                    "id": request_id.hex,
-                    "timing": end - start,
-                    **response_data,
+            await PubSub.publish(
+                {
+                    "type": "response",
+                    "payload": {
+                        "id": request_id.hex,
+                        "timing": end - start,
+                        **response_data,
+                    },
                 }
-            })
+            )

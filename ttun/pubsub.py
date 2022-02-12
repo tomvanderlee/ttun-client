@@ -1,6 +1,8 @@
 import asyncio
 from contextlib import contextmanager
-from typing import Any, Generator, Iterator
+from typing import Any
+from typing import Generator
+from typing import Iterator
 
 
 class PubSub:
@@ -8,10 +10,10 @@ class PubSub:
 
     def __init__(self):
         self.queues: list[asyncio.Queue] = []
-        self._history= []
+        self._history = []
 
     @classmethod
-    def instance(cls) -> 'PubSub':
+    def instance(cls) -> "PubSub":
         if cls._instance == None:
             cls._instance = cls()
         return cls._instance

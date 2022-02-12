@@ -1,3 +1,4 @@
 setuptools
 build
 setuptools-git-versioning
+pre-commit
