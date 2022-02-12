@@ -16,19 +16,10 @@
 .sidebar {
   width: calc((6 / 16) * 100%);
   height: 100%;
-  overflow-y: auto;
 }
 
 .details {
   width: calc((10 / 16) * 100%);
   overflow: hidden;
   height: 100%;
-}
-
-.noRequest, .noRequestSelected {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }

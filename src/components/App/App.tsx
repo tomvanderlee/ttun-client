@@ -6,8 +6,7 @@ import useRequests, {
 } from "../../hooks/useRequests";
 
 import styles from './App.module.scss';
-import Details from "../Details/Details";
-import RequestSummary from "../RequestSummary/RequestSummary";
+import RequestDetails from "../RequestDetails/RequestDetails";
 import {getHost} from "../../utils";
 import {Container, ListGroup, Nav, Navbar, NavDropdown} from "react-bootstrap";
 import classNames from "classnames";
@@ -16,6 +15,7 @@ import {Sun} from "../Icons/Sun";
 import {Moon} from "../Icons/Moon";
 import Trash from "../Icons/Trash";
 import {DarkModeContext} from "../../contexts/DarkMode";
+import RequestList from "../RequestList/RequestList";
 
 interface Config {
   url: string
@@ -143,53 +143,11 @@ export default function App() {
       </Navbar>
 
       <main className={styles.main}>
-        <ListGroup
-          variant='flush'
-          as="ul"
-          className={classNames("border-end", styles.sidebar)}
-        >
-          {
-            calls.length > 0
-              ? (
-                calls.slice(0).reverse().map((requestResponse, index) => {
-                  const selected = selectedRequestIndex === calls.length - index - 1;
-                  return (
-                    <ListGroup.Item
-                      as="li"
-                      onClick={() => setSelectedRequestIndex(calls.length - index - 1)}
-                      key={`request-${index}`}
-                      className={classNames({
-                        'bg-primary': selected,
-                        'text-light': selected,
-                        'border-bottom': true
-                      })}
-                    >
-                      <RequestSummary
-                        requestResponse={requestResponse}
-                        selected={selected}
-                      />
-                    </ListGroup.Item>
-                  )
-                })
-              )
-              : (
-                <div className={styles.noRequest}>
-                  <p>No requests</p>
-                </div>
-              )
-          }
-        </ListGroup>
+        <div className={classNames("border-end", styles.sidebar)}>
+          <RequestList requests={calls} selectedRequestIndex={selectedRequestIndex} setSelectedRequestIndex={setSelectedRequestIndex}/>
+        </div>
         <div className={styles.details}>
-          {
-            selectedRequest !== null
-              ? (
-                <Details requestResponse={selectedRequest} />
-              ) : (
-                <div className={styles.noRequestSelected}>
-                  <p>Select a request to inspect it</p>
-                </div>
-              )
-          }
+          <RequestDetails requestResponse={selectedRequest} />
         </div>
       </main>
     </div>

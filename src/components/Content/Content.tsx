@@ -7,7 +7,6 @@ import {Button, Col, Container, Row} from "react-bootstrap";
 import {DarkModeContext} from "../../contexts/DarkMode";
 
 function getHeader(headers: Headers, key: string, unit?: string): string | null {
-  console.log(headers, key)
   try {
     const [_, value] = headers.find(([headerKey]) => headerKey.toLowerCase() === key.toLowerCase())
     return unit !== undefined

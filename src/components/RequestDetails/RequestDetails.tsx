@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useCallback, useMemo, useState} from "react";
-import {RequestResponse, Headers} from "~hooks/useRequests";
-import styles from "./Details.module.scss";
+import {RequestResponse, Headers} from "../../hooks/useRequests";
+import styles from "./RequestDetails.module.scss";
 import RequestSummary from "../RequestSummary/RequestSummary";
 import Content from "../Content/Content";
 import {getHost} from "../../utils";
@@ -62,16 +62,16 @@ function Headers({ title, headers }: HeadersProps) {
 }
 
 interface DetailsProps {
-  requestResponse: RequestResponse
+  requestResponse: RequestResponse | null
 }
 
 type Tab = 'headers' | 'request' | 'response'
 
-export default function Details({ requestResponse }: DetailsProps) {
+export default function RequestDetails({ requestResponse }: DetailsProps) {
   const [tab, selectTab] = useState<Tab>('headers');
   const [raw, setRaw] = useState(false);
 
-  const resend = useCallback(async () => fetch(
+  const resend = useCallback(async () => requestResponse !== null && fetch(
     `http://${getHost()}/resend/`,
     {
       method: 'POST',
@@ -82,7 +82,7 @@ export default function Details({ requestResponse }: DetailsProps) {
     }
   ), [requestResponse]);
 
-  return (
+  return requestResponse !== null ? (
     <div className={styles.details}>
       <div className={styles.header}>
         <Row>
@@ -157,6 +157,10 @@ export default function Details({ requestResponse }: DetailsProps) {
           )
         }
       </div>
+    </div>
+  ) : (
+    <div className={styles.noRequestSelected}>
+      <p>Select a request to inspect it</p>
     </div>
   )
 }

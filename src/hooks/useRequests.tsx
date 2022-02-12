@@ -2,12 +2,13 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {getHost} from "../utils";
 
 export type Headers = [string, string][]
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 export interface RequestPayload {
   id: string
   body: string
   headers: Headers
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+  method: Method
   path: string
 }
 
