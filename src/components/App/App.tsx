@@ -1,27 +1,18 @@
 import * as React from "react";
 import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
-import useRequests, {
-  ReadyState,
-  RequestResponse,
-} from "../../hooks/useRequests";
+import useRequests, { ReadyState, RequestResponse } from "~/hooks/useRequests";
 
-import styles from "./App.module.scss";
-import RequestDetails from "../RequestDetails/RequestDetails";
-import { getHost } from "../../utils";
-import {
-  Container,
-  ListGroup,
-  Nav,
-  Navbar,
-  NavDropdown,
-} from "react-bootstrap";
+import styles from "~/components/App.module.scss";
+import RequestDetails from "~/components/RequestDetails/RequestDetails";
+import { getHost } from "~/utils";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import classNames from "classnames";
-import { Sliders } from "../Icons/Sliders";
-import { Sun } from "../Icons/Sun";
-import { Moon } from "../Icons/Moon";
-import Trash from "../Icons/Trash";
-import { DarkModeContext } from "../../contexts/DarkMode";
-import RequestList from "../RequestList/RequestList";
+import Sliders from "~/components/Icons/Sliders";
+import Sun from "~/components/Icons/Sun";
+import Moon from "~/components/Icons/Moon";
+import Trash from "~/components/Icons/Trash";
+import { DarkModeContext } from "~/contexts/DarkMode";
+import RequestList from "~/components/RequestList/RequestList";
 
 interface Config {
   url: string;

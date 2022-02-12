@@ -2,7 +2,7 @@ import { RequestResponse } from "~hooks/useRequests";
 import * as React from "react";
 import classNames from "classnames";
 
-import { Badge, Card, Col, Row } from "react-bootstrap";
+import { Badge, Col, Row } from "react-bootstrap";
 
 interface RequestSummaryProps {
   selected?: boolean;

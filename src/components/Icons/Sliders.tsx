@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export function Sliders() {
+export default function Sliders() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

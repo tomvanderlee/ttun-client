@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export function Moon() {
+export default function Moon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

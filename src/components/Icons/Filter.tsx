@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export function Filter() {
+export default function Filter() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { RequestResponse, Headers } from "../../hooks/useRequests";
-import styles from "./RequestDetails.module.scss";
-import RequestSummary from "../RequestSummary/RequestSummary";
-import Content from "../Content/Content";
-import { getHost } from "../../utils";
+import { Headers, RequestResponse } from "~/hooks/useRequests";
+import styles from "~/components/RequestDetails/RequestDetails.module.scss";
+import RequestSummary from "~/components/RequestSummary/RequestSummary";
+import Content from "~/components/Content/Content";
+import { getHost } from "~/utils";
 import { Button, Card, Col, Container, Nav, Row, Table } from "react-bootstrap";
 
 interface TimingProps {

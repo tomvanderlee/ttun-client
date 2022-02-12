@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getHost } from "../utils";
+import { getHost } from "~/utils";
 
 export type Headers = [string, string][];
 export type Method =

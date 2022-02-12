@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Dispatch, SetStateAction, useContext, useMemo } from "react";
-import { RequestPayload, ResponsePayload, Headers } from "~hooks/useRequests";
+import { Headers, RequestPayload, ResponsePayload } from "~hooks/useRequests";
 import ReactJson from "react-json-view";
-import styles from "./Content.module.scss";
+import styles from "~/components/Content/Content.module.scss";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { DarkModeContext } from "../../contexts/DarkMode";
+import { DarkModeContext } from "~/contexts/DarkMode";
 
 function getHeader(
   headers: Headers,

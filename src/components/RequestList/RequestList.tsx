@@ -8,13 +8,13 @@ import {
   Offcanvas,
 } from "react-bootstrap";
 import classNames from "classnames";
-import styles from "./RequestList.module.scss";
-import RequestSummary from "../RequestSummary/RequestSummary";
+import styles from "~/components/RequestList/RequestList.module.scss";
+import RequestSummary from "~/components/RequestSummary/RequestSummary";
 import * as React from "react";
 import { useCallback, useContext, useMemo, useState } from "react";
-import { Method, RequestResponse } from "../../hooks/useRequests";
-import { DarkModeContext } from "../../contexts/DarkMode";
-import { Filter } from "../Icons/Filter";
+import { Method, RequestResponse } from "~/hooks/useRequests";
+import { DarkModeContext } from "~/contexts/DarkMode";
+import Filter from "~/components/Icons/Filter";
 
 interface ListProps {
   requests: RequestResponse[];
