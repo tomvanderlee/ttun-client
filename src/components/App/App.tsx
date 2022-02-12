@@ -2,7 +2,7 @@ import * as React from "react";
 import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
 import useRequests, { ReadyState, RequestResponse } from "~/hooks/useRequests";
 
-import styles from "~/components/App.module.scss";
+import styles from "~/components/App/App.module.scss";
 import RequestDetails from "~/components/RequestDetails/RequestDetails";
 import { getHost } from "~/utils";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
