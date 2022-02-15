@@ -95,7 +95,11 @@ class Client:
 
             response_data = ResponseData(
                 status=response.status,
-                headers=list(response.headers.items()),
+                headers=[
+                    (key, value)
+                    for key, value in response.headers.items()
+                    if key.lower() not in ["transfer-encoding", "content-encoding"]
+                ],
                 body=b64encode(await response.read()).decode(),
             )
 
