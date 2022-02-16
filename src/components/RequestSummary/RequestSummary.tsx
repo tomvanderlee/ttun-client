@@ -3,10 +3,12 @@ import * as React from "react";
 import classNames from "classnames";
 
 import { Badge, Col, Row } from "react-bootstrap";
+import dayjs from "dayjs";
 
 interface RequestSummaryProps {
   selected?: boolean;
   requestResponse: RequestResponse;
+  showTime?: boolean;
 }
 
 function isBetween(value: number, min: number, max: number) {
@@ -32,9 +34,22 @@ function calcBadgeVariant(statusCode: number | undefined): string {
 export default function RequestSummary({
   requestResponse: { request, response },
   selected = false,
+  showTime = false,
 }: RequestSummaryProps) {
   return (
     <Row>
+      {showTime && (
+        <Col
+          className={classNames(
+            "flex-grow-0 d-flex align-items-center text-nowrap",
+            {
+              "text-muted": !selected,
+            }
+          )}
+        >
+          {dayjs(request.timestamp).format("LTS")}
+        </Col>
+      )}
       <Col className="flex-grow-0 d-flex align-items-center">
         {request.method}
       </Col>

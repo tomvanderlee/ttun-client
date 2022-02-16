@@ -15,6 +15,7 @@ export type Method =
 
 export interface RequestPayload {
   id: string;
+  timestamp: string;
   body: string;
   headers: Headers;
   method: Method;

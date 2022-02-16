@@ -2,6 +2,7 @@ import asyncio
 import json
 from base64 import b64decode
 from base64 import b64encode
+from datetime import datetime
 from time import perf_counter
 from typing import Awaitable
 from typing import Callable
@@ -80,7 +81,14 @@ class Client:
         async with ClientSession(cookie_jar=DummyCookieJar()) as session:
             request_id = uuid4()
             await PubSub.publish(
-                {"type": "request", "payload": {"id": request_id.hex, **request}}
+                {
+                    "type": "request",
+                    "payload": {
+                        "id": request_id.hex,
+                        "timestamp": datetime.now().isoformat(),
+                        **request,
+                    },
+                }
             )
 
             start = perf_counter()

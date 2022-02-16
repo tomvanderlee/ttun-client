@@ -106,8 +106,7 @@ export default function RequestList({
       )
       .filter(
         ([index, request]) =>
-          search === "" ||
-          searchRegex.test(`${request.request.method} ${request.request.path}`)
+          search === "" || searchRegex.test(request.request.path)
       );
   }, [requests, search, enabledMethods, enableRegex]);
 
@@ -168,6 +167,7 @@ export default function RequestList({
                 <RequestSummary
                   requestResponse={requestResponse}
                   selected={selected}
+                  showTime
                 />
               </ListGroup.Item>
             );
@@ -205,7 +205,7 @@ export default function RequestList({
               onChange={() => setEnableRegex(!enableRegex)}
             />
           </Form.Group>
-          <Form.Group>
+          <Form.Group className="mb-4">
             <Form.Label className="fw-bold">Method</Form.Label>
             {Object.entries(methods).map(([method, enabled]) => (
               <Form.Check
