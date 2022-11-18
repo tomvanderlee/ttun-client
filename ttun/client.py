@@ -25,13 +25,21 @@ from ttun.types import ResponseData
 
 
 class Client:
-    def __init__(self, port: int, server: str, subdomain: str = None):
-        self.port = port
+    def __init__(
+        self,
+        port: int,
+        server: str,
+        subdomain: str = None,
+        to: str = "127.0.0.1",
+        https: bool = False,
+    ):
         self.server = server
         self.subdomain = subdomain
 
         self.config: Optional[Config] = None
         self.connection: WebSocketClientProtocol = None
+
+        self.proxy_origin = f'{"https" if https else "http"}://{to}:{port}'
 
     async def send(self, data: dict):
         await self.connection.send(json.dumps(data))
@@ -65,73 +73,77 @@ class Client:
             return self.connection
 
     async def handle_messages(self):
-        while True:
-            try:
-                request: RequestData = await self.receive()
-                await self.proxy_request(
-                    request=request, on_response=lambda response: self.send(response)
-                )
-
-            except ConnectionClosed:
-                break
+        async with ClientSession(
+            base_url=self.proxy_origin, cookie_jar=DummyCookieJar()
+        ) as session:
+            while True:
+                try:
+                    request: RequestData = await self.receive()
+                    await self.proxy_request(
+                        session=session,
+                        request=request,
+                        on_response=lambda response: self.send(response),
+                    )
+                except ConnectionClosed:
+                    break
 
     async def proxy_request(
         self,
+        session: ClientSession,
         request: RequestData,
         on_response: Callable[[ResponseData], Awaitable] = None,
     ):
-        async with ClientSession(cookie_jar=DummyCookieJar()) as session:
-            request_id = uuid4()
-            await PubSub.publish(
-                {
-                    "type": "request",
-                    "payload": {
-                        "id": request_id.hex,
-                        "timestamp": datetime.now().isoformat(),
-                        **request,
-                    },
-                }
+        request_id = uuid4()
+        await PubSub.publish(
+            {
+                "type": "request",
+                "payload": {
+                    "id": request_id.hex,
+                    "timestamp": datetime.now().isoformat(),
+                    **request,
+                },
+            }
+        )
+
+        start = perf_counter()
+        try:
+            response = await session.request(
+                method=request["method"],
+                url=request["path"],
+                headers=request["headers"],
+                data=b64decode(request["body"].encode()),
+                allow_redirects=False,
+            )
+            end = perf_counter()
+
+            response_data = ResponseData(
+                status=response.status,
+                headers=[
+                    (key, value)
+                    for key, value in response.headers.items()
+                    if key.lower() not in ["transfer-encoding", "content-encoding"]
+                ],
+                body=b64encode(await response.read()).decode(),
+            )
+        except ClientError as e:
+            end = perf_counter()
+
+            response_data = ResponseData(
+                status=(504 if isinstance(e, ClientConnectionError) else 502),
+                headers=[("content-type", "text/plain")],
+                body=b64encode(str(e).encode()).decode(),
             )
 
-            start = perf_counter()
-            try:
-                response = await session.request(
-                    method=request["method"],
-                    url=f'http://localhost:{self.port}{request["path"]}',
-                    headers=request["headers"],
-                    data=b64decode(request["body"].encode()),
-                    allow_redirects=False,
-                )
-                end = perf_counter()
+        if on_response is not None:
+            await on_response(response_data)
 
-                response_data = ResponseData(
-                    status=response.status,
-                    headers=[
-                        (key, value)
-                        for key, value in response.headers.items()
-                        if key.lower() not in ["transfer-encoding", "content-encoding"]
-                    ],
-                    body=b64encode(await response.read()).decode(),
-                )
-            except ClientError as e:
-                end = perf_counter()
-
-                response_data = ResponseData(
-                    status=(504 if isinstance(e, ClientConnectionError) else 502),
-                    headers=[("content-type", "text/plain")],
-                    body=b64encode(str(e).encode()).decode(),
-                )
-
-            if on_response is not None:
-                await on_response(response_data)
-
-            await PubSub.publish(
-                {
-                    "type": "response",
-                    "payload": {
-                        "id": request_id.hex,
-                        "timing": end - start,
-                        **response_data,
-                    },
-                }
-            )
+        await PubSub.publish(
+            {
+                "type": "response",
+                "payload": {
+                    "id": request_id.hex,
+                    "timing": end - start,
+                    **response_data,
+                },
+            }
+        )
