@@ -11,6 +11,8 @@ from typing import Optional
 from uuid import uuid4
 
 import websockets
+from aiohttp import ClientConnectionError
+from aiohttp import ClientError
 from aiohttp import ClientSession
 from aiohttp import DummyCookieJar
 from websockets import WebSocketClientProtocol
@@ -66,14 +68,14 @@ class Client:
         while True:
             try:
                 request: RequestData = await self.receive()
-                await self.proxyRequest(
+                await self.proxy_request(
                     request=request, on_response=lambda response: self.send(response)
                 )
 
             except ConnectionClosed:
                 break
 
-    async def proxyRequest(
+    async def proxy_request(
         self,
         request: RequestData,
         on_response: Callable[[ResponseData], Awaitable] = None,
@@ -92,24 +94,33 @@ class Client:
             )
 
             start = perf_counter()
-            response = await session.request(
-                method=request["method"],
-                url=f'http://localhost:{self.port}{request["path"]}',
-                headers=request["headers"],
-                data=b64decode(request["body"].encode()),
-                allow_redirects=False,
-            )
-            end = perf_counter()
+            try:
+                response = await session.request(
+                    method=request["method"],
+                    url=f'http://localhost:{self.port}{request["path"]}',
+                    headers=request["headers"],
+                    data=b64decode(request["body"].encode()),
+                    allow_redirects=False,
+                )
+                end = perf_counter()
 
-            response_data = ResponseData(
-                status=response.status,
-                headers=[
-                    (key, value)
-                    for key, value in response.headers.items()
-                    if key.lower() not in ["transfer-encoding", "content-encoding"]
-                ],
-                body=b64encode(await response.read()).decode(),
-            )
+                response_data = ResponseData(
+                    status=response.status,
+                    headers=[
+                        (key, value)
+                        for key, value in response.headers.items()
+                        if key.lower() not in ["transfer-encoding", "content-encoding"]
+                    ],
+                    body=b64encode(await response.read()).decode(),
+                )
+            except ClientError as e:
+                end = perf_counter()
+
+                response_data = ResponseData(
+                    status=(504 if isinstance(e, ClientConnectionError) else 502),
+                    headers=[("content-type", "text/plain")],
+                    body=b64encode(str(e).encode()).decode(),
+                )
 
             if on_response is not None:
                 await on_response(response_data)
