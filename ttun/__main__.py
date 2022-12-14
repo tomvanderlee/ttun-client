@@ -66,7 +66,7 @@ def main():
 
     server = Server(
         config=client.config,
-        on_resend=client.proxy_request,
+        on_resend=client.resend,
         on_started=print_info,
     )
 

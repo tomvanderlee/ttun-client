@@ -72,10 +72,11 @@ class Client:
         if self.connection.open:
             return self.connection
 
+    def session(self):
+        return ClientSession(base_url=self.proxy_origin, cookie_jar=DummyCookieJar())
+
     async def handle_messages(self):
-        async with ClientSession(
-            base_url=self.proxy_origin, cookie_jar=DummyCookieJar()
-        ) as session:
+        async with self.session() as session:
             while True:
                 try:
                     request: RequestData = await self.receive()
@@ -86,6 +87,10 @@ class Client:
                     )
                 except ConnectionClosed:
                     break
+
+    async def resend(self, data: RequestData):
+        async with self.session() as session:
+            await self.proxy_request(session, data)
 
     async def proxy_request(
         self,
