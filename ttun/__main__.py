@@ -1,9 +1,13 @@
 import asyncio
+import re
+import time
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 from asyncio import FIRST_EXCEPTION
 from asyncio.exceptions import CancelledError
 from asyncio.exceptions import TimeoutError
+from typing import Dict
+from typing import Tuple
 
 from ttun.client import Client
 from ttun.inspect_server import Server
@@ -11,6 +15,13 @@ from ttun.settings import SERVER_HOSTNAME
 from ttun.settings import SERVER_USING_SSL
 
 inspect_queue = asyncio.Queue()
+
+
+header_regex = re.compile("(?P<header>\w+)")
+
+
+def header(v) -> Tuple[str, str]:
+    return v
 
 
 def main():
@@ -39,6 +50,15 @@ def main():
         action="store_true",
         default=False,
     )
+
+    parser.add_argument(
+        "-H",
+        "--header",
+        help='A header to send with each request to the proxied server. Should be in the format of "<header>: <value>" You can add multiple.',
+        action="append",
+        type=header,
+    )
+
     args = parser.parse_args()
 
     client = Client(
