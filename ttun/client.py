@@ -7,7 +7,9 @@ from time import perf_counter
 from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
+from typing import List
 from typing import Optional
+from typing import Tuple
 from uuid import uuid4
 
 import websockets
@@ -32,6 +34,7 @@ class Client:
         subdomain: str = None,
         to: str = "127.0.0.1",
         https: bool = False,
+        headers: List[Tuple[str, str]] = None,
     ):
         self.server = server
         self.subdomain = subdomain
@@ -40,6 +43,8 @@ class Client:
         self.connection: WebSocketClientProtocol = None
 
         self.proxy_origin = f'{"https" if https else "http"}://{to}:{port}'
+
+        self.headers = [] if headers is None else headers
 
     async def send(self, data: dict):
         await self.connection.send(json.dumps(data))
@@ -80,6 +85,11 @@ class Client:
             while True:
                 try:
                     request: RequestData = await self.receive()
+
+                    request["headers"] = [
+                        *request["headers"],
+                        *self.headers,
+                    ]
                     await self.proxy_request(
                         session=session,
                         request=request,

@@ -21,7 +21,8 @@ header_regex = re.compile("(?P<header>\w+)")
 
 
 def header(v) -> Tuple[str, str]:
-    return v
+    name, *value = v.split(":")
+    return name.strip(), ":".join(value).strip()
 
 
 def main():
@@ -67,6 +68,7 @@ def main():
         server=args.server,
         to=args.to,
         https=args.https,
+        headers=args.header,
     )
 
     try:
