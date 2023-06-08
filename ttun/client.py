@@ -1,8 +1,11 @@
 import asyncio
 import json
+import logging
+from asyncio import create_task, get_running_loop
 from base64 import b64decode
 from base64 import b64encode
 from datetime import datetime
+from pprint import pformat
 from time import perf_counter
 from typing import Awaitable
 from typing import Callable
@@ -21,9 +24,11 @@ from websockets import WebSocketClientProtocol
 from websockets.exceptions import ConnectionClosed
 
 from ttun.pubsub import PubSub
-from ttun.types import Config
+from ttun.types import Config, Message, MessageType
 from ttun.types import RequestData
 from ttun.types import ResponseData
+
+from ttun import __version__
 
 
 class Client:
@@ -36,6 +41,7 @@ class Client:
         https: bool = False,
         headers: List[Tuple[str, str]] = None,
     ):
+        self.version = __version__
         self.server = server
         self.subdomain = subdomain
 
@@ -47,10 +53,13 @@ class Client:
         self.headers = [] if headers is None else headers
 
     async def send(self, data: dict):
+        print('send {}'.format(pformat(data)))
         await self.connection.send(json.dumps(data))
 
     async def receive(self) -> dict:
-        return json.loads(await self.connection.recv())
+        data = json.loads(await self.connection.recv())
+        print('receive {}'.format(pformat(data)))
+        return data
 
     @staticmethod
     def loop(sleep: int = None):
@@ -69,8 +78,12 @@ class Client:
 
     async def connect(self) -> WebSocketClientProtocol:
         self.connection = await websockets.connect(f"{self.server}/tunnel/")
+        print(self.version)
 
-        await self.send({"subdomain": self.subdomain})
+        await self.send({
+            "subdomain": self.subdomain,
+            "version": self.version
+        })
 
         self.config = await self.receive()
 
@@ -81,20 +94,40 @@ class Client:
         return ClientSession(base_url=self.proxy_origin, cookie_jar=DummyCookieJar())
 
     async def handle_messages(self):
+        loop = get_running_loop()
         async with self.session() as session:
             while True:
                 try:
-                    request: RequestData = await self.receive()
+                    message: Message = await self.receive()
+
+                    try:
+                        if MessageType(message['type']) != MessageType.request:
+                            continue
+                    except ValueError:
+                        continue
+
+                    request: RequestData = message['payload']
 
                     request["headers"] = [
                         *request["headers"],
                         *self.headers,
                     ]
-                    await self.proxy_request(
+
+                    async def response_handler(
+                            response: ResponseData,
+                            identifier=message['identifier']
+                    ):
+                        await self.send(Message(
+                            type=MessageType.response.value,
+                            identifier=identifier,
+                            payload=response
+                        ))
+
+                    loop.create_task(self.proxy_request(
                         session=session,
                         request=request,
-                        on_response=lambda response: self.send(response),
-                    )
+                        on_response=response_handler,
+                    ))
                 except ConnectionClosed:
                     break
 

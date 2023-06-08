@@ -9,6 +9,8 @@ from asyncio.exceptions import TimeoutError
 from typing import Dict
 from typing import Tuple
 
+from websockets.exceptions import ConnectionClosedError
+
 from ttun.client import Client
 from ttun.inspect_server import Server
 from ttun.settings import SERVER_HOSTNAME
@@ -71,6 +73,7 @@ def main():
         headers=args.header,
     )
 
+
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -96,7 +99,8 @@ def main():
 
     try:
         loop.run_until_complete(asyncio.wait(tasks, return_when=FIRST_EXCEPTION))
-    except (CancelledError, TimeoutError):
+    except (CancelledError, TimeoutError) as e:
+        print(e)
         for task in tasks:
             task.cancel()
         loop.close()
