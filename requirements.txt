@@ -1,4 +1,4 @@
 -r dev_requirements.txt
 websockets ~= 10.0
-aiohttp ~= 3.8
+aiohttp[speedups] ~= 3.8
 appdirs ~= 1.4
