@@ -1,7 +1,8 @@
 import asyncio
 import json
 import logging
-from asyncio import create_task, get_running_loop
+from asyncio import create_task
+from asyncio import get_running_loop
 from base64 import b64decode
 from base64 import b64encode
 from datetime import datetime
@@ -23,12 +24,13 @@ from aiohttp import DummyCookieJar
 from websockets import WebSocketClientProtocol
 from websockets.exceptions import ConnectionClosed
 
+from ttun import __version__
 from ttun.pubsub import PubSub
-from ttun.types import Config, Message, MessageType
+from ttun.types import Config
+from ttun.types import Message
+from ttun.types import MessageType
 from ttun.types import RequestData
 from ttun.types import ResponseData
-
-from ttun import __version__
 
 
 class Client:
@@ -53,12 +55,10 @@ class Client:
         self.headers = [] if headers is None else headers
 
     async def send(self, data: dict):
-        print('send {}'.format(pformat(data)))
         await self.connection.send(json.dumps(data))
 
     async def receive(self) -> dict:
         data = json.loads(await self.connection.recv())
-        print('receive {}'.format(pformat(data)))
         return data
 
     @staticmethod
@@ -78,12 +78,8 @@ class Client:
 
     async def connect(self) -> WebSocketClientProtocol:
         self.connection = await websockets.connect(f"{self.server}/tunnel/")
-        print(self.version)
 
-        await self.send({
-            "subdomain": self.subdomain,
-            "version": self.version
-        })
+        await self.send({"subdomain": self.subdomain, "version": self.version})
 
         self.config = await self.receive()
 
@@ -101,12 +97,12 @@ class Client:
                     message: Message = await self.receive()
 
                     try:
-                        if MessageType(message['type']) != MessageType.request:
+                        if MessageType(message["type"]) != MessageType.request:
                             continue
                     except ValueError:
                         continue
 
-                    request: RequestData = message['payload']
+                    request: RequestData = message["payload"]
 
                     request["headers"] = [
                         *request["headers"],
@@ -114,20 +110,23 @@ class Client:
                     ]
 
                     async def response_handler(
-                            response: ResponseData,
-                            identifier=message['identifier']
+                        response: ResponseData, identifier=message["identifier"]
                     ):
-                        await self.send(Message(
-                            type=MessageType.response.value,
-                            identifier=identifier,
-                            payload=response
-                        ))
+                        await self.send(
+                            Message(
+                                type=MessageType.response.value,
+                                identifier=identifier,
+                                payload=response,
+                            )
+                        )
 
-                    loop.create_task(self.proxy_request(
-                        session=session,
-                        request=request,
-                        on_response=response_handler,
-                    ))
+                    loop.create_task(
+                        self.proxy_request(
+                            session=session,
+                            request=request,
+                            on_response=response_handler,
+                        )
+                    )
                 except ConnectionClosed:
                     break
 
