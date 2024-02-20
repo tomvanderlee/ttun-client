@@ -1,12 +1,9 @@
 import asyncio
 import json
-import logging
-from asyncio import create_task
 from asyncio import get_running_loop
 from base64 import b64decode
 from base64 import b64encode
 from datetime import datetime
-from pprint import pformat
 from time import perf_counter
 from typing import Awaitable
 from typing import Callable
@@ -120,7 +117,7 @@ class Client:
                             )
                         )
 
-                    loop.create_task(
+                    await loop.create_task(
                         self.proxy_request(
                             session=session,
                             request=request,
@@ -168,7 +165,8 @@ class Client:
                 headers=[
                     (key, value)
                     for key, value in response.headers.items()
-                    if key.lower() not in ["transfer-encoding", "content-encoding"]
+                    if key.lower()
+                    not in ["transfer-encoding", "content-encoding", "content-length"]
                 ],
                 body=b64encode(await response.read()).decode(),
             )
