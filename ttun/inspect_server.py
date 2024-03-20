@@ -2,13 +2,12 @@ from importlib import resources
 from pathlib import Path
 from typing import Awaitable
 from typing import Callable
-from typing import Optional
 
 from aiohttp import web
 
 from ttun.pubsub import PubSub
 from ttun.types import Config
-from ttun.types import RequestData
+from ttun.types import HttpRequestData
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -17,7 +16,7 @@ class Server:
     def __init__(
         self,
         config: Config,
-        on_resend: Callable[[RequestData], Awaitable],
+        on_resend: Callable[[HttpRequestData], Awaitable],
         on_started: Callable[["Server"], None],
     ):
         self.port = 4040
