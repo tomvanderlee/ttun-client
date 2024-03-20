@@ -1,61 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getHost } from "~/utils";
-
-export type Headers = [string, string][];
-export type Method =
-  | "GET"
-  | "HEAD"
-  | "POST"
-  | "PUT"
-  | "DELETE"
-  | "CONNECT"
-  | "OPTIONS"
-  | "TRACE"
-  | "PATCH";
-
-export interface RequestPayload {
-  id: string;
-  timestamp: string;
-  body: string;
-  headers: Headers;
-  method: Method;
-  path: string;
-}
-
-interface Request {
-  type: "request";
-  payload: RequestPayload;
-}
-
-export interface ResponsePayload {
-  id: string;
-  timing: number;
-  body: string;
-  headers: Headers;
-  status: number;
-}
-
-interface Response {
-  type: "response";
-  payload: ResponsePayload;
-}
-
-interface Historic {
-  type: "historic";
-  payload: (Request | Response)[];
-}
-
-export interface RequestResponse {
-  request: RequestPayload;
-  response?: ResponsePayload;
-}
-
-export enum ReadyState {
-  CONNECTING = 0,
-  OPEN = 1,
-  CLOSING = 2,
-  CLOSED = 3,
-}
+import {
+  Historic,
+  ReadyState,
+  Request,
+  RequestPayload,
+  RequestResponse,
+  Response,
+  ResponsePayload,
+  WebsocketType,
+} from "~/types";
 
 export interface useRequestsProps {
   onConnect: () => Promise<void>;
@@ -75,6 +29,8 @@ export default function useRequests({
   const [initialConnection, setInitialConnection] = useState(true);
   const [requests, setRequests] = useState<RequestPayload[]>([]);
   const [responses, setResponses] = useState<ResponsePayload[]>([]);
+  const [websocketFrames, setWebsocketFrames] =
+    useState<WebsocketType["payload"]>();
 
   const connect = useCallback(
     () => new WebSocket(`ws://${wsHost}/inspect/`),
@@ -101,6 +57,8 @@ export default function useRequests({
         | Historic
         | Request
         | Response;
+
+      console.debug(type, payload);
 
       switch (type) {
         case "historic":

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
-import useRequests, { ReadyState, RequestResponse } from "~/hooks/useRequests";
+import useRequests from "~/hooks/useRequests";
 
 import styles from "~/components/App/App.module.scss";
 import RequestDetails from "~/components/RequestDetails/RequestDetails";
@@ -13,6 +13,7 @@ import Moon from "~/components/Icons/Moon";
 import Trash from "~/components/Icons/Trash";
 import { DarkModeContext } from "~/contexts/DarkMode";
 import RequestList from "~/components/RequestList/RequestList";
+import { ReadyState, RequestResponse } from "~/types";
 
 interface Config {
   url: string;
