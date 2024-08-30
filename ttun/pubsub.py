@@ -1,7 +1,6 @@
 import asyncio
 from contextlib import contextmanager
 from typing import Any
-from typing import Generator
 from typing import Iterator
 
 

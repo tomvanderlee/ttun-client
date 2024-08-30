@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
-import useRequests, { ReadyState, RequestResponse } from "~/hooks/useRequests";
+import useRequests from "~/hooks/useRequests";
 
 import styles from "~/components/App/App.module.scss";
 import RequestDetails from "~/components/RequestDetails/RequestDetails";
@@ -13,6 +13,8 @@ import Moon from "~/components/Icons/Moon";
 import Trash from "~/components/Icons/Trash";
 import { DarkModeContext } from "~/contexts/DarkMode";
 import RequestList from "~/components/RequestList/RequestList";
+import { Call, ReadyState } from "~/types";
+import { ConnectionContext } from "~/contexts/Connection";
 
 interface Config {
   url: string;
@@ -47,28 +49,13 @@ const statusTextMap: ReadyStateMap = {
 
 export default function App() {
   const { darkMode, toggle } = useContext(DarkModeContext);
-  const [config, setConfig] = useState<Config | null>(null);
-
-  const { calls, readyState, clear } = useRequests({
-    onConnect: async () => {
-      const response = await fetch(`http://${getHost()}/config/`);
-      const config = await response.json();
-      setConfig(config);
-    },
-  });
+  const { config, selectedCall, setSelectedCall, readyState, clear } =
+    useContext(ConnectionContext);
 
   useEffect(() => {
     const url = new URL(config?.url ?? "https://loading...");
     document.title = `${statusIconMap[readyState]} ${url.host} | TTUN`;
   }, [readyState, config?.url]);
-
-  const [selectedRequestIndex, setSelectedRequestIndex] = useState<
-    number | null
-  >(null);
-  const selectedRequest = useMemo<RequestResponse | null>(
-    () => (selectedRequestIndex === null ? null : calls[selectedRequestIndex]),
-    [selectedRequestIndex, calls]
-  );
 
   const settingsMenu: (SettingsMenu | null)[] = [
     {
@@ -79,7 +66,7 @@ export default function App() {
     null,
     {
       onClick: () => {
-        setSelectedRequestIndex(null);
+        setSelectedCall(null);
         clear();
       },
       icon: <Trash />,
@@ -105,14 +92,15 @@ export default function App() {
                 </a>
               </Navbar.Text>
               <Navbar.Toggle aria-controls="settings" />
-              <Navbar.Collapse id="settings" className="ms-2">
+              <Navbar.Collapse id="settings" className="ms-2" role="button">
                 <Nav>
                   <NavDropdown align="end" title={<Sliders />}>
-                    {settingsMenu.map((item) => {
+                    {settingsMenu.map((item, index) => {
                       if (item !== null) {
                         const { onClick, icon, label } = item;
                         return (
                           <NavDropdown.Item
+                            key={label}
                             onClick={onClick}
                             className="d-flex align-items-center"
                           >
@@ -121,7 +109,7 @@ export default function App() {
                           </NavDropdown.Item>
                         );
                       } else {
-                        return <NavDropdown.Divider />;
+                        return <NavDropdown.Divider key={`item-${index}`} />;
                       }
                     })}
                   </NavDropdown>
@@ -133,14 +121,10 @@ export default function App() {
 
         <main className={styles.main}>
           <div className={classNames("border-end", styles.sidebar)}>
-            <RequestList
-              requests={calls}
-              selectedRequestIndex={selectedRequestIndex}
-              setSelectedRequestIndex={setSelectedRequestIndex}
-            />
+            <RequestList />
           </div>
           <div className={styles.details}>
-            <RequestDetails requestResponse={selectedRequest} />
+            <RequestDetails />
           </div>
         </main>
       </div>

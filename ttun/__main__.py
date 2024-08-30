@@ -1,20 +1,22 @@
 import asyncio
+import logging
+import os
 import re
-import time
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 from asyncio import FIRST_EXCEPTION
 from asyncio.exceptions import CancelledError
 from asyncio.exceptions import TimeoutError
-from typing import Dict
 from typing import Tuple
-
-from websockets.exceptions import ConnectionClosedError
 
 from ttun.client import Client
 from ttun.inspect_server import Server
 from ttun.settings import SERVER_HOSTNAME
 from ttun.settings import SERVER_USING_SSL
+
+logging.basicConfig(encoding="utf-8")
+logging.getLogger("asyncio").setLevel(os.environ.get("LOGGING_LEVEL", "NOTSET"))
+logging.getLogger("websockets").setLevel(os.environ.get("LOGGING_LEVEL", "NOTSET"))
 
 inspect_queue = asyncio.Queue()
 
@@ -72,7 +74,6 @@ def main():
         https=args.https,
         headers=args.header,
     )
-
 
     try:
         loop = asyncio.get_running_loop()

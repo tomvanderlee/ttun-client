@@ -11,27 +11,24 @@ import classNames from "classnames";
 import styles from "~/components/RequestList/RequestList.module.scss";
 import RequestSummary from "~/components/RequestSummary/RequestSummary";
 import * as React from "react";
-import { useCallback, useContext, useMemo, useState } from "react";
-import { Method, RequestResponse } from "~/hooks/useRequests";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DarkModeContext } from "~/contexts/DarkMode";
 import Filter from "~/components/Icons/Filter";
-
-interface ListProps {
-  requests: RequestResponse[];
-  selectedRequestIndex: number | null;
-  setSelectedRequestIndex: (index: number) => void;
-}
+import { Call, Method } from "~/types";
+import { ConnectionContext } from "~/contexts/Connection";
 
 type EnabledMethods = {
   [method in Method]: boolean;
 };
 
-export default function RequestList({
-  requests,
-  selectedRequestIndex,
-  setSelectedRequestIndex,
-}: ListProps) {
+export default function RequestList() {
   const { darkMode } = useContext(DarkModeContext);
+  const {
+    calls: requests,
+    selectedCall,
+    setSelectedCall,
+  } = useContext(ConnectionContext);
+
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [search, setSearch] = useState("");
   const [enableRegex, setEnableRegex] = useState(false);
@@ -73,7 +70,7 @@ export default function RequestList({
     () =>
       Object.entries(methods)
         .filter(([method, enabled]) => enabled)
-        .map(([method]) => method),
+        .map(([method]) => method) as Method[],
     [methods]
   );
 
@@ -97,16 +94,14 @@ export default function RequestList({
     } catch {}
 
     return requests
-      .map<[number, RequestResponse]>((request, index) => [index, request])
       .reverse()
       .filter(
-        ([index, request]) =>
-          enabledMethods.length > 0 === null ||
+        (request) =>
+          enabledMethods.length === 0 ||
           enabledMethods.includes(request.request.method)
       )
       .filter(
-        ([index, request]) =>
-          search === "" || searchRegex.test(request.request.path)
+        (request) => search === "" || searchRegex.test(request.request.path)
       );
   }, [requests, search, enabledMethods, enableRegex]);
 
@@ -124,7 +119,10 @@ export default function RequestList({
               </Dropdown.Item>
               <Dropdown.Divider />
               {Object.entries(methods).map(([method, enabled]) => (
-                <Dropdown.Item onClick={() => toggleMethods(method as Method)}>
+                <Dropdown.Item
+                  onClick={() => toggleMethods(method as Method)}
+                  key={method}
+                >
                   {method}
                 </Dropdown.Item>
               ))}
@@ -151,13 +149,14 @@ export default function RequestList({
         className={classNames(styles.list, "flex-grow-1")}
       >
         {filteredRequests.length > 0 ? (
-          filteredRequests.map(([index, requestResponse]) => {
-            const selected = selectedRequestIndex === index;
+          filteredRequests.map((requestResponse) => {
+            const selected =
+              selectedCall?.request.id === requestResponse.request.id;
             return (
               <ListGroup.Item
                 as="li"
-                onClick={() => setSelectedRequestIndex(index)}
-                key={`request-${index}`}
+                onClick={() => setSelectedCall?.(requestResponse)}
+                key={requestResponse.request.id}
                 className={classNames({
                   "bg-primary": selected,
                   "text-light": selected,
@@ -209,6 +208,7 @@ export default function RequestList({
             <Form.Label className="fw-bold">Method</Form.Label>
             {Object.entries(methods).map(([method, enabled]) => (
               <Form.Check
+                key={method}
                 type="switch"
                 label={method}
                 checked={enabled}

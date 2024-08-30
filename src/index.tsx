@@ -7,11 +7,14 @@ import DarkModeProvider from "./contexts/DarkMode";
 
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import ConnectionProvider from "~/contexts/Connection";
 dayjs.extend(localizedFormat);
 
 ReactDOM.render(
   <DarkModeProvider>
-    <App />
+    <ConnectionProvider>
+      <App />
+    </ConnectionProvider>
   </DarkModeProvider>,
   document.getElementById("root")
 );
