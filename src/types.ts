@@ -37,31 +37,33 @@ export interface Response {
   payload: ResponsePayload;
 }
 
-type RequestResponseType = Request | Response;
+export type RequestResponseType = Request | Response;
 
-interface WebsocketConnectPayload {
+export interface WebsocketConnectPayload {
+  method: "GET";
   id: string;
   headers: Headers;
   path: string;
   timestamp: string;
 }
 
-interface WebsocketConnect {
+export interface WebsocketConnect {
   type: "websocket_connect";
   payload: WebsocketConnectPayload;
 }
 
-interface WebsocketConnectedPayload {
+export interface WebsocketConnectedPayload {
   id: string;
   timing: number;
+  status: 101;
 }
 
-interface WebsocketConnected {
+export interface WebsocketConnected {
   type: "websocket_connected";
   payload: WebsocketConnectedPayload;
 }
 
-interface WebsocketInboundPayload {
+export interface WebsocketInboundPayload {
   id: string;
   timestamp: string;
   body: string;
@@ -72,7 +74,7 @@ interface WebsocketInbound {
   payload: WebsocketInboundPayload;
 }
 
-interface WebsocketOutboundPayload {
+export interface WebsocketOutboundPayload {
   id: string;
   timestamp: string;
   body: string;
@@ -83,7 +85,7 @@ interface WebsocketOutbound {
   payload: WebsocketOutboundPayload;
 }
 
-interface WebsocketDisconnectPayload {
+export interface WebsocketDisconnectPayload {
   id: string;
   timestamp: string;
   close_code: number;
@@ -107,9 +109,24 @@ export interface Historic {
 }
 
 export interface RequestResponse {
+  type: "RequestResponse";
   request: RequestPayload;
   response?: ResponsePayload;
 }
+
+export type Frame = WebsocketDisconnect | WebsocketInbound | WebsocketOutbound;
+export interface WebsocketConnection {
+  type: "WebsocketConnection";
+  request: WebsocketConnectPayload;
+  response?: WebsocketConnectedPayload;
+  frames?: Frame[];
+}
+
+export type Call = RequestResponse | WebsocketConnection;
+
+export type Requests = Array<Request | WebsocketConnect>;
+export type Responses = { [id: string]: Response | WebsocketConnected };
+export type Frames = { [id: string]: Frame[] };
 
 export enum ReadyState {
   CONNECTING = 0,

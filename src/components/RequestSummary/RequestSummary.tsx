@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 
 interface RequestSummaryProps {
   selected?: boolean;
-  requestResponse: RequestResponse;
+  requestResponse: Calls;
   showTime?: boolean;
 }
 

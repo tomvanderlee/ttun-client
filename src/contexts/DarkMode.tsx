@@ -2,7 +2,7 @@ import * as React from "react";
 import {
   Context,
   createContext,
-  ReactNode,
+  PropsWithChildren,
   useEffect,
   useMemo,
   useState,
@@ -17,11 +17,8 @@ interface DarkModeApi {
 export const DarkModeContext = createContext<Partial<DarkModeApi>>(
   {}
 ) as Context<DarkModeApi>;
-interface DarkModeProviderProps {
-  children: ReactNode;
-}
 
-export default function DarkModeProvider({ children }: DarkModeProviderProps) {
+export default function DarkModeProvider({ children }: PropsWithChildren<any>) {
   const themeConfig = useMemo(() => new ThemeConfig(), []);
   const [darkMode, setDarkMode] = useState(
     () => themeConfig.getTheme() === "dark"

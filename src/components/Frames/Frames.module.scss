@@ -1,0 +1,9 @@
+.arrow {
+  &.outbound {
+    color: green;
+  }
+
+  &.inbound {
+    color: red;
+  }
+}

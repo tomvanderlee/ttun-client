@@ -1,11 +1,13 @@
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import styles from "~/components/RequestDetails/RequestDetails.module.scss";
 import RequestSummary from "~/components/RequestSummary/RequestSummary";
 import Content from "~/components/Content/Content";
 import { getHost } from "~/utils";
 import { Button, Card, Col, Container, Nav, Row, Table } from "react-bootstrap";
-import { Headers, RequestResponse } from "~/types";
+import { Call, Headers, selectedCall } from "~/types";
+import { ConnectionContext } from "~/contexts/Connection";
+import Frames from "~/components/Frames/Frames";
 
 interface TimingProps {
   timing: number;
@@ -49,37 +51,35 @@ function HeaderTable({ title, headers }: HeaderTableProps) {
   );
 }
 
-interface DetailsProps {
-  requestResponse: RequestResponse | null;
-}
+type Tab = "headers" | "request" | "response" | "messages";
 
-type Tab = "headers" | "request" | "response";
+export default function RequestDetails() {
+  const { selectedCall } = useContext(ConnectionContext);
 
-export default function RequestDetails({ requestResponse }: DetailsProps) {
   const [tab, selectTab] = useState<Tab>("headers");
   const [raw, setRaw] = useState(false);
 
   const resend = useCallback(
     async () =>
-      requestResponse !== null &&
+      selectedCall !== null &&
       fetch(`http://${getHost()}/resend/`, {
         method: "POST",
         body: JSON.stringify({
-          ...requestResponse.request,
+          ...selectedCall.request,
           id: undefined,
         }),
       }),
-    [requestResponse]
+    [selectedCall]
   );
 
-  return requestResponse !== null ? (
+  return selectedCall !== null ? (
     <div className={styles.details}>
       <div className={styles.header}>
         <Row>
           <Col>
             <Container fluid style={{ fontSize: "1.5em" }} className="py-3">
               <RequestSummary
-                requestResponse={requestResponse}
+                requestResponse={selectedCall}
                 className={styles.summary}
               />
             </Container>
@@ -98,18 +98,29 @@ export default function RequestDetails({ requestResponse }: DetailsProps) {
               <Nav.Item>
                 <Nav.Link eventKey="request">Request</Nav.Link>
               </Nav.Item>
-              <Nav.Item>
-                <Nav.Link
-                  eventKey="response"
-                  disabled={requestResponse.response === undefined}
-                >
-                  Response
-                </Nav.Link>
-              </Nav.Item>
+              {selectedCall.type === "RequestResponse" && (
+                <>
+                  <Nav.Item>
+                    <Nav.Link
+                      eventKey="response"
+                      disabled={selectedCall.response === undefined}
+                    >
+                      Response
+                    </Nav.Link>
+                  </Nav.Item>
+                </>
+              )}
+              {selectedCall.type === "WebsocketConnection" && (
+                <>
+                  <Nav.Item>
+                    <Nav.Link eventKey="response">Messages</Nav.Link>
+                  </Nav.Item>
+                </>
+              )}
             </Nav>
           </Col>
           <Col className="border-bottom px-3 " xs="auto">
-            <Timing timing={requestResponse.response?.timing ?? NaN} />
+            <Timing timing={selectedCall.response?.timing ?? NaN} />
             <Button
               variant="outline-primary"
               onClick={() => resend()}
@@ -125,21 +136,30 @@ export default function RequestDetails({ requestResponse }: DetailsProps) {
           <>
             <HeaderTable
               title="request headers"
-              headers={requestResponse.request.headers}
+              headers={selectedCall.request.headers}
             />
-            {requestResponse.response && (
-              <HeaderTable
-                title="response headers"
-                headers={requestResponse.response.headers}
-              />
-            )}
+
+            {selectedCall.type === "RequestResponse" &&
+              selectedCall.response !== undefined && (
+                <HeaderTable
+                  title="response headers"
+                  headers={selectedCall.response.headers}
+                />
+              )}
           </>
         )}
         {tab === "request" && (
-          <Content data={requestResponse.request} raw={raw} setRaw={setRaw} />
+          <Content data={selectedCall.request} raw={raw} setRaw={setRaw} />
         )}
-        {tab === "response" && requestResponse.response !== undefined && (
-          <Content data={requestResponse.response} raw={raw} setRaw={setRaw} />
+        {selectedCall.type === "RequestResponse" &&
+          tab === "response" &&
+          selectedCall.response !== undefined && (
+            <Content data={selectedCall.response} raw={raw} setRaw={setRaw} />
+          )}
+        {selectedCall.type === "WebsocketConnection" && tab === "response" && (
+          <Frames frames={selectedCall.frames} />
+          // <Content data={selectedCall.frames} raw={false} setRaw={setRaw} />
+          // <pre>{JSON.stringify(selectedCall.frames, undefined, 2)}</pre>
         )}
       </div>
     </div>

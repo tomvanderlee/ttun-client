@@ -1,5 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { getHost } from "~/utils";
+import * as React from "react";
+
+import {
+  Context,
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Call,
   Frame,
@@ -20,20 +29,31 @@ import {
   WebsocketOutboundPayload,
   WebsocketType,
 } from "~/types";
+import { getHost } from "~/utils";
 
-export interface useRequestsProps {
-  onConnect: () => Promise<void>;
+interface Config {
+  url: string;
 }
 
-export interface UseRequests {
+interface ConnectionApi {
+  config: Config | null;
   calls: Call[];
+  selectedCall: Call | null;
+  setSelectedCall: (call: Call | null) => void;
   readyState: ReadyState;
   clear: () => void;
 }
 
-export default function useRequests({
-  onConnect,
-}: useRequestsProps): UseRequests {
+export const ConnectionContext = createContext<Partial<ConnectionApi>>(
+  {}
+) as Context<ConnectionApi>;
+
+export default function ConnectionProvider({
+  children,
+}: PropsWithChildren<any>): JSX.Element {
+  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [config, setConfig] = useState<Config | null>(null);
+
   const wsHost = useMemo(getHost, []);
 
   const [initialConnection, setInitialConnection] = useState(true);
@@ -56,11 +76,16 @@ export default function useRequests({
       setReadyState(ws.readyState);
       setWs(connect());
     };
-    const onOpen = () => {
-      onConnect();
+
+    const onOpen = async () => {
+      const response = await fetch(`http://${getHost()}/config/`);
+      const config = await response.json();
+      setConfig(config);
+
       setInitialConnection(false);
       setReadyState(ws.readyState);
     };
+
     const onMessage = ({ data }: { data: string }) => {
       const { type, payload } = JSON.parse(data) as
         | Historic
@@ -213,34 +238,51 @@ export default function useRequests({
   const calls = useMemo<Call[]>(
     () =>
       requests.map((request) => {
-        switch (request.type) {
-          case "request":
-            return {
-              type: "RequestResponse",
-              request: request.payload,
-              response: responses[request.payload.id]
-                ?.payload as ResponsePayload,
-            };
-          case "websocket_connect":
-            return {
-              type: "WebsocketConnection",
-              request: request.payload,
-              response: responses[request.payload.id]
-                ?.payload as WebsocketConnectedPayload,
-              frames: websocketFrames[request.payload.id] ?? [],
-            };
+        let call: Call;
+        if (request.type === "request") {
+          call = {
+            type: "RequestResponse",
+            request: request.payload,
+            response: responses[request.payload.id]?.payload as ResponsePayload,
+          };
+        } else {
+          call = {
+            type: "WebsocketConnection",
+            request: request.payload,
+            response: responses[request.payload.id]
+              ?.payload as WebsocketConnectedPayload,
+            frames: websocketFrames[request.payload.id] ?? [],
+          };
         }
+
+        if (
+          selectedCall !== null &&
+          selectedCall.request.id === call.request.id
+        ) {
+          setSelectedCall(call);
+        }
+
+        return call;
       }),
     [requests, responses, websocketFrames]
   );
 
-  return {
-    calls,
-    readyState,
-    clear: () => {
-      setRequests([]);
-      setResponses({});
-      setWebsocketFrames({});
-    },
-  };
+  return (
+    <ConnectionContext.Provider
+      value={{
+        config,
+        calls,
+        selectedCall,
+        setSelectedCall,
+        readyState,
+        clear: () => {
+          setRequests([]);
+          setResponses({});
+          setWebsocketFrames({});
+        },
+      }}
+    >
+      {children}
+    </ConnectionContext.Provider>
+  );
 }
