@@ -1,3 +1,7 @@
+export interface Settings {
+  darkMode: boolean;
+}
+
 export type Headers = [string, string][];
 export type Method =
   | "GET"

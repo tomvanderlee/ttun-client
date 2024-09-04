@@ -1,24 +1,18 @@
 import * as React from "react";
-import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
-import useRequests from "~/hooks/useRequests";
+import { ReactElement, useContext, useEffect } from "react";
 
 import styles from "~/components/App/App.module.scss";
 import RequestDetails from "~/components/RequestDetails/RequestDetails";
-import { getHost } from "~/utils";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import classNames from "classnames";
 import Sliders from "~/components/Icons/Sliders";
 import Sun from "~/components/Icons/Sun";
 import Moon from "~/components/Icons/Moon";
 import Trash from "~/components/Icons/Trash";
-import { DarkModeContext } from "~/contexts/DarkMode";
+import { SettingsContext } from "~/contexts/Settings";
 import RequestList from "~/components/RequestList/RequestList";
-import { Call, ReadyState } from "~/types";
+import { ReadyState } from "~/types";
 import { ConnectionContext } from "~/contexts/Connection";
-
-interface Config {
-  url: string;
-}
 
 interface SettingsMenu {
   icon: ReactElement;
@@ -48,8 +42,8 @@ const statusTextMap: ReadyStateMap = {
 };
 
 export default function App() {
-  const { darkMode, toggle } = useContext(DarkModeContext);
-  const { config, selectedCall, setSelectedCall, readyState, clear } =
+  const { darkMode, setSetting } = useContext(SettingsContext);
+  const { config, setSelectedCall, readyState, clear } =
     useContext(ConnectionContext);
 
   useEffect(() => {
@@ -59,7 +53,7 @@ export default function App() {
 
   const settingsMenu: (SettingsMenu | null)[] = [
     {
-      onClick: toggle,
+      onClick: () => setSetting("darkMode", !darkMode),
       icon: darkMode ? <Sun /> : <Moon />,
       label: darkMode ? "Light mode" : "Dark mode",
     },

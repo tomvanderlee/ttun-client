@@ -4,10 +4,11 @@ import classNames from "classnames";
 
 import { Badge, Col, Row } from "react-bootstrap";
 import dayjs from "dayjs";
+import { Call } from "~/types";
 
 interface RequestSummaryProps {
   selected?: boolean;
-  requestResponse: Calls;
+  requestResponse: Call;
   showTime?: boolean;
 }
 

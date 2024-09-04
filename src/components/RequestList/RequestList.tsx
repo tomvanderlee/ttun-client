@@ -12,7 +12,7 @@ import styles from "~/components/RequestList/RequestList.module.scss";
 import RequestSummary from "~/components/RequestSummary/RequestSummary";
 import * as React from "react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { DarkModeContext } from "~/contexts/DarkMode";
+import { SettingsContext } from "~/contexts/Settings";
 import Filter from "~/components/Icons/Filter";
 import { Call, Method } from "~/types";
 import { ConnectionContext } from "~/contexts/Connection";
@@ -22,7 +22,7 @@ type EnabledMethods = {
 };
 
 export default function RequestList() {
-  const { darkMode } = useContext(DarkModeContext);
+  const { darkMode } = useContext(SettingsContext);
   const {
     calls: requests,
     selectedCall,

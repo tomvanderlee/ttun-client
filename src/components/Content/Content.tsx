@@ -4,7 +4,7 @@ import { Headers, RequestPayload, ResponsePayload } from "~hooks/useRequests";
 import ReactJson from "react-json-view";
 import styles from "~/components/Content/Content.module.scss";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { DarkModeContext } from "~/contexts/DarkMode";
+import { SettingsContext } from "~/contexts/Settings";
 
 function getHeader(
   headers: Headers,
@@ -80,14 +80,14 @@ export default function Content({
 }
 
 function ContentBody({ data, raw = false }: Omit<ContentProps, "setRaw">) {
-  const { darkMode } = useContext(DarkModeContext);
+  const { darkMode } = useContext(SettingsContext);
   const contentType = useMemo(() => {
     if (raw) {
       return "";
     }
 
     const type = getHeader(data.headers, "content-type");
-    return type.toLowerCase().split(";")[0];
+    return type?.toLowerCase().split(";")[0];
   }, [data, raw]);
 
   if (raw) {
@@ -98,7 +98,10 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, "setRaw">) {
     );
   }
 
-  if (["application/pdf", "text/html"].includes(contentType)) {
+  if (
+    contentType !== undefined &&
+    ["application/pdf", "text/html"].includes(contentType)
+  ) {
     return (
       <iframe
         className="bg-white"
@@ -110,7 +113,7 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, "setRaw">) {
     );
   }
 
-  if (contentType.startsWith("application/json")) {
+  if (contentType?.startsWith("application/json")) {
     return (
       <ReactJson
         src={JSON.parse(atob(data.body))}
@@ -125,15 +128,15 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, "setRaw">) {
     );
   }
 
-  if (contentType.startsWith("audio")) {
+  if (contentType?.startsWith("audio")) {
     return <audio src={`data:${contentType};base64,${data.body}`} />;
   }
 
-  if (contentType.startsWith("video")) {
+  if (contentType?.startsWith("video")) {
     return <video src={`data:${contentType};base64,${data.body}`} />;
   }
 
-  if (contentType.startsWith("image")) {
+  if (contentType?.startsWith("image")) {
     return <img src={`data:${contentType};base64,${data.body}`} alt="" />;
   }
 

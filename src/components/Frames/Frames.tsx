@@ -5,7 +5,7 @@ import classNames from "classnames";
 import styles from "./Frames.module.scss";
 import dayjs from "dayjs";
 import ReactJson from "react-json-view";
-import { DarkModeContext } from "~/contexts/DarkMode";
+import { SettingsContext } from "~/contexts/Settings";
 
 function isJson(data: any): boolean {
   try {
@@ -23,7 +23,6 @@ interface FramesProps {
 export default function Frames({
   frames,
 }: PropsWithChildren<FramesProps>): JSX.Element {
-  const { darkMode } = useContext(DarkModeContext);
   return (
     <ListGroup variant="flush" as="ul" className={"flex-grow-1"}>
       {frames.length > 0 ? (
