@@ -128,6 +128,21 @@ function ContentBody({ data, raw = false }: Omit<ContentProps, "setRaw">) {
     );
   }
 
+  if (contentType?.startsWith("application/x-www-form-urlencoded")) {
+    return (
+      <ReactJson
+        src={Object.fromEntries(new URLSearchParams(atob(data.body)))}
+        theme={darkMode ? "monokai" : undefined}
+        style={{
+          padding: "1em",
+          width: "100%",
+          height: "100%",
+          overflowY: "auto",
+        }}
+      />
+    );
+  }
+
   if (contentType?.startsWith("audio")) {
     return <audio src={`data:${contentType};base64,${data.body}`} />;
   }
