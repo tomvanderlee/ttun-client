@@ -4,7 +4,7 @@ import { Col, ListGroup, Row } from "react-bootstrap";
 import classNames from "classnames";
 import styles from "./Frames.module.scss";
 import dayjs from "dayjs";
-import ReactJson from "react-json-view";
+import ReactJson from "@microlink/react-json-view";
 import { SettingsContext } from "~/contexts/Settings";
 
 function isJson(data: any): boolean {

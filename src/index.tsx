@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import App from "~/components/App/App";
 
 import "~/index.scss";
@@ -10,11 +10,10 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import ConnectionProvider from "~/contexts/Connection";
 dayjs.extend(localizedFormat);
 
-ReactDOM.render(
+createRoot(document.getElementById("root")).render(
   <SettingsProvider>
     <ConnectionProvider>
       <App />
     </ConnectionProvider>
-  </SettingsProvider>,
-  document.getElementById("root")
+  </SettingsProvider>
 );

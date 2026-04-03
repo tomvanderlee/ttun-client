@@ -21,7 +21,7 @@ from aiohttp import ClientConnectionError
 from aiohttp import ClientError
 from aiohttp import ClientSession
 from aiohttp import DummyCookieJar
-from websockets import WebSocketClientProtocol
+from websockets.asyncio.client import ClientConnection
 from websockets.exceptions import ConnectionClosed
 
 from ttun import __version__
@@ -56,7 +56,7 @@ class Client:
         self.subdomain = subdomain
 
         self.config: Optional[Config] = None
-        self.connection: WebSocketClientProtocol = None
+        self.connection: ClientConnection = None
 
         self.proxy_origin = f'{"https" if https else "http"}://{to}:{port}'
         self.ws_proxy_origin = f'{"wss" if https else "ws"}://{to}:{port}'
@@ -87,15 +87,14 @@ class Client:
 
         return wrapper
 
-    async def connect(self) -> WebSocketClientProtocol:
+    async def connect(self) -> ClientConnection:
         self.connection = await websockets.connect(f"{self.server}/tunnel/")
 
         await self.send({"subdomain": self.subdomain, "version": self.version})
 
         self.config = await self.receive()
 
-        if self.connection.open:
-            return self.connection
+        return self.connection
 
     def session(self):
         return ClientSession(base_url=self.proxy_origin, cookie_jar=DummyCookieJar())

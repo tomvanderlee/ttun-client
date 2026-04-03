@@ -1,6 +1,37 @@
 [build-system]
-requires = [ "setuptools>=41", "wheel", "setuptools-git-versioning", ]
+requires = ["setuptools>=41", "wheel", "setuptools-git-versioning"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "ttun"
+dynamic = ["version"]
+authors = [{name = "Tom van der Lee"}]
+description = "Expose a local port via your selfhosted TTUN Server"
+readme = "README.rst"
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.10"
+dependencies = [
+    "websockets ~= 16.0",
+    "aiohttp[speedups] ~= 3.13.5",
+    "appdirs ~= 1.4",
+]
+
+[project.scripts]
+ttun = "ttun.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
 
 [tool.setuptools-git-versioning]
 enabled = true
+
+[dependency-groups]
+dev = [
+    "setuptools",
+    "build",
+    "setuptools-git-versioning",
+    "pre-commit",
+]

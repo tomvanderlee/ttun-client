@@ -65,7 +65,7 @@ class Server:
         ws = web.WebSocketResponse()
         await ws.prepare(request)
 
-        await ws.send_json({"type": "historic", "payload": PubSub.history})
+        await ws.send_json({"type": "historic", "payload": PubSub.history()})
 
         with PubSub.subscribe() as subscription:
             while message := await subscription.get():

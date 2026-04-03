@@ -10,22 +10,22 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.11.3",
+    "@microlink/react-json-view": "^1.31.15",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "classnames": "^2.5.1",
-    "dayjs": "^1.11.13",
-    "react": "^18.3.1",
-    "react-bootstrap": "^2.10.4",
-    "react-dom": "^18.3.1",
-    "react-json-view": "^1.21.3"
+    "dayjs": "^1.11.20",
+    "react": "^19.2.4",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "babel-preset-nano-react-app": "^0.1.0",
-    "sass": "^1.78.0",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.3"
+    "sass": "^1.99.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   }
 }

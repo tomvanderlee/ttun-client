@@ -37,7 +37,6 @@ class PubSub:
         del queue
 
     @classmethod
-    @property
     def history(cls):
         instance = cls.instance()
         return instance._history

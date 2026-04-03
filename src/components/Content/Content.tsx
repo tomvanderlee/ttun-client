@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Dispatch, SetStateAction, useContext, useMemo } from "react";
 import { Headers, RequestPayload, ResponsePayload } from "~hooks/useRequests";
-import ReactJson from "react-json-view";
+import ReactJson from "@microlink/react-json-view";
 import styles from "~/components/Content/Content.module.scss";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { SettingsContext } from "~/contexts/Settings";
