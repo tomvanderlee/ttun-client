@@ -46,14 +46,14 @@ class Client:
         self,
         port: int,
         server: str,
-        subdomain: str = None,
+        subdomains: List[str] = None,
         to: str = "127.0.0.1",
         https: bool = False,
         headers: List[Tuple[str, str]] = None,
     ):
         self.version = __version__
         self.server = server
-        self.subdomain = subdomain
+        self.subdomains = subdomains
 
         self.config: Optional[Config] = None
         self.connection: ClientConnection = None
@@ -90,7 +90,13 @@ class Client:
     async def connect(self) -> ClientConnection:
         self.connection = await websockets.connect(f"{self.server}/tunnel/")
 
-        await self.send({"subdomain": self.subdomain, "version": self.version})
+        await self.send(
+            {
+                "subdomain": self.subdomains[0] if self.subdomains else None,
+                "subdomains": self.subdomains,
+                "version": self.version,
+            }
+        )
 
         self.config = await self.receive()
 

@@ -42,6 +42,7 @@ def main():
         "--subdomain",
         default=None,
         help="The subdomain of the ttun tunnel",
+        action="append",
     )
     parser.add_argument(
         "-t",
@@ -68,7 +69,7 @@ def main():
 
     client = Client(
         port=args.port,
-        subdomain=args.subdomain,
+        subdomains=args.subdomain,
         server=args.server,
         to=args.to,
         https=args.https,
@@ -85,7 +86,13 @@ def main():
 
     def print_info(server: Server):
         print("Tunnel created:")
-        print(f'{client.config["url"]} -> {client.proxy_origin}')
+
+        if "urls" in client.config:
+            for url in client.config["urls"]:
+                print(f"{url} -> {client.proxy_origin}")
+        else:
+            print(f'{client.config["url"]} -> {client.proxy_origin}')
+
         print("")
         print(f"Inspect requests:")
         print(f"http://localhost:{server.port}")
