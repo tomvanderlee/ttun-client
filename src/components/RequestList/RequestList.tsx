@@ -21,9 +21,14 @@ type EnabledMethods = {
   [method in Method]: boolean;
 };
 
+type EnabledHosts = {
+  [host: string]: boolean;
+};
+
 export default function RequestList() {
   const { darkMode } = useContext(SettingsContext);
   const {
+    config,
     calls: requests,
     selectedCall,
     setSelectedCall,
@@ -32,6 +37,20 @@ export default function RequestList() {
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [search, setSearch] = useState("");
   const [enableRegex, setEnableRegex] = useState(false);
+
+  const [hosts, setHosts] = useState<EnabledHosts>({});
+
+  useEffect(() => {
+    setHosts((oldValues) =>
+      (config?.urls ?? []).reduce((acc, url) => {
+        const { host } = new URL(url);
+        return {
+          ...acc,
+          [host]: oldValues[host] ?? true,
+        };
+      }, {})
+    );
+  }, [config?.urls]);
 
   const [methods, setMethods] = useState<EnabledMethods>({
     GET: true,
@@ -95,6 +114,17 @@ export default function RequestList() {
 
     return requests
       .reverse()
+      .filter((request) => {
+        const [_, hostHeader] = request.request.headers.find(
+          ([key]) => key.toLowerCase() === "host"
+        ) ?? [null, null];
+
+        if (hostHeader === null) {
+          return true;
+        }
+
+        return hosts[hostHeader] ?? false;
+      })
       .filter(
         (request) =>
           enabledMethods.length === 0 ||
@@ -103,7 +133,7 @@ export default function RequestList() {
       .filter(
         (request) => search === "" || searchRegex.test(request.request.path)
       );
-  }, [requests, search, enabledMethods, enableRegex]);
+  }, [requests, search, hosts, enabledMethods, enableRegex]);
 
   return (
     <div className={classNames(styles.listContainer, "d-flex")}>
@@ -205,6 +235,20 @@ export default function RequestList() {
             />
           </Form.Group>
           <Form.Group className="mb-4">
+            <Form.Label className="fw-bold">Hosts</Form.Label>
+            {Object.entries(hosts).map(([host, enabled]) => (
+              <Form.Check
+                key={host}
+                type="switch"
+                label={host}
+                checked={enabled}
+                onChange={() =>
+                  setHosts((values) => ({ ...values, [host]: !enabled }))
+                }
+              />
+            ))}
+          </Form.Group>
+          <Form.Group className="mb-4">
             <Form.Label className="fw-bold">Method</Form.Label>
             {Object.entries(methods).map(([method, enabled]) => (
               <Form.Check
@@ -212,7 +256,9 @@ export default function RequestList() {
                 type="switch"
                 label={method}
                 checked={enabled}
-                onChange={() => setMethods({ ...methods, [method]: !enabled })}
+                onChange={() =>
+                  setMethods((values) => ({ ...values, [method]: !enabled }))
+                }
               />
             ))}
           </Form.Group>

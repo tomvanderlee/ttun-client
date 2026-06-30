@@ -55,7 +55,7 @@ class Client:
         self.server = server
         self.subdomains = subdomains
 
-        self.config: Optional[Config] = None
+        self._config: dict = None
         self.connection: ClientConnection = None
 
         self.proxy_origin = f'{"https" if https else "http"}://{to}:{port}'
@@ -98,9 +98,13 @@ class Client:
             }
         )
 
-        self.config = await self.receive()
+        self._config = await self.receive()
 
         return self.connection
+
+    @property
+    def config(self) -> Config:
+        return Config(urls=self._config.get("urls", [self._config["url"]]))
 
     def session(self):
         return ClientSession(base_url=self.proxy_origin, cookie_jar=DummyCookieJar())

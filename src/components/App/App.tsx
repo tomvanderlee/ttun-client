@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ReactElement, useContext, useEffect } from "react";
+import { ReactElement, useContext, useEffect, useState } from "react";
 
 import styles from "~/components/App/App.module.scss";
 import RequestDetails from "~/components/RequestDetails/RequestDetails";
@@ -28,9 +28,9 @@ type ReadyStateMap = {
 };
 
 const statusIconMap: ReadyStateMap = {
-  [ReadyState.CONNECTING]: "🔴",
+  [ReadyState.CONNECTING]: "🟠",
   [ReadyState.OPEN]: "🟢",
-  [ReadyState.CLOSING]: "🔴",
+  [ReadyState.CLOSING]: "🟠",
   [ReadyState.CLOSED]: "🔴",
 };
 
@@ -47,9 +47,9 @@ export default function App() {
     useContext(ConnectionContext);
 
   useEffect(() => {
-    const url = new URL(config?.url ?? "https://loading...");
+    const url = new URL(config?.urls[0] ?? "https://loading...");
     document.title = `${statusIconMap[readyState]} ${url.host} | TTUN`;
-  }, [readyState, config?.url]);
+  }, [readyState, config?.urls]);
 
   const settingsMenu: (SettingsMenu | null)[] = [
     {
@@ -80,11 +80,6 @@ export default function App() {
               </Navbar.Text>
             </div>
             <div className="d-flex">
-              <Navbar.Text>
-                <a href={config.url} target="_blank">
-                  {config.url}
-                </a>
-              </Navbar.Text>
               <Navbar.Toggle aria-controls="settings" />
               <Navbar.Collapse id="settings" className="ms-2" role="button">
                 <Nav>

@@ -32,7 +32,7 @@ import {
 import { getHost } from "~/utils";
 
 interface Config {
-  url: string;
+  urls: string[];
 }
 
 interface ConnectionApi {

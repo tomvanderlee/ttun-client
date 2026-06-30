@@ -87,11 +87,8 @@ def main():
     def print_info(server: Server):
         print("Tunnel created:")
 
-        if "urls" in client.config:
-            for url in client.config["urls"]:
-                print(f"{url} -> {client.proxy_origin}")
-        else:
-            print(f'{client.config["url"]} -> {client.proxy_origin}')
+        for url in client.config["urls"]:
+            print(f"{url} -> {client.proxy_origin}")
 
         print("")
         print(f"Inspect requests:")

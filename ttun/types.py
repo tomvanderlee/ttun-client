@@ -70,4 +70,4 @@ Message = HttpMessage | WebsocketMessage
 
 
 class Config(TypedDict):
-    url: str
+    urls: list[str]
